@@ -1,0 +1,16 @@
+{
+  "name": "registro-documentos-demo",
+  "version": "1.0.0",
+  "description": "CLI de demostracion para interactuar con el contrato RegistroDocumentos en Sepolia",
+  "type": "module",
+  "main": "demo.js",
+  "scripts": {
+    "registrar": "node demo.js registrar",
+    "verificar": "node demo.js verificar",
+    "autorizar": "node demo.js autorizar"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "ethers": "^6.13.2"
+  }
+}
