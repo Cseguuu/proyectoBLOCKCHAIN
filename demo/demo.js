@@ -103,7 +103,7 @@ async function cmdVerificar(archivo) {
 
   console.log(`\n  Archivo: ${archivo}`);
   console.log(`  Hash:    ${hash}`);
-  console.log(`\  Llamando verificar() (transaccion, deja traza on-chain)...`);
+  console.log(`\n  Llamando verificar() (transaccion, deja traza on-chain)...`);
 
   const tx = await contrato.verificar(hash);
   console.log(`  Tx enviada: ${linkTx(tx.hash)}`);
