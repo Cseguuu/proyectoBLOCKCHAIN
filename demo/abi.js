@@ -3,21 +3,25 @@
 export const REGISTRO_ABI = [
   // --- Escritura ---
   "function registrar(bytes32 hashDoc, address titular, uint8 tipo)",
+  "function revocarDocumento(bytes32 hashDoc)",
   "function autorizarEmisor(address emisor)",
   "function revocarEmisor(address emisor)",
+  "function transferirAdmin(address nuevoAdmin)",
   // verificar() NO es view: emite evento y deja traza on-chain
-  "function verificar(bytes32 hashDoc) returns (bool valido, tuple(address emisor, address titular, uint64 timestamp, uint8 tipo, bool existe) doc)",
+  "function verificar(bytes32 hashDoc) returns (bool valido, tuple(address emisor, address titular, uint64 timestamp, uint8 tipo, bool existe, bool revocado) doc)",
 
   // --- Lectura (view, gratis) ---
-  "function consultar(bytes32 hashDoc) view returns (bool valido, tuple(address emisor, address titular, uint64 timestamp, uint8 tipo, bool existe) doc)",
+  "function consultar(bytes32 hashDoc) view returns (bool valido, tuple(address emisor, address titular, uint64 timestamp, uint8 tipo, bool existe, bool revocado) doc)",
   "function emisoresAutorizados(address) view returns (bool)",
   "function admin() view returns (address)",
 
   // --- Eventos ---
   "event DocumentoRegistrado(bytes32 indexed hashDoc, address indexed emisor, address indexed titular, uint8 tipo, uint64 timestamp)",
   "event DocumentoVerificado(bytes32 indexed hashDoc, address indexed verificador, bool valido)",
+  "event DocumentoRevocado(bytes32 indexed hashDoc, address indexed por)",
   "event EmisorAutorizado(address indexed emisor, address indexed por)",
   "event EmisorRevocado(address indexed emisor, address indexed por)",
+  "event AdminTransferido(address indexed anterior, address indexed nuevo)",
 ];
 
 // Espejo del enum TipoDocumento del contrato.

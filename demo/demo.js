@@ -5,8 +5,14 @@
 //   node demo.js registrar <archivo> <titular> <tipo>
 //   node demo.js verificar <archivo>
 //   node demo.js consultar <archivo>
+//   node demo.js revocar-doc <archivo>
 //   node demo.js autorizar <address>
+//   node demo.js revocar-emisor <address>
+//   node demo.js transferir-admin <address>
 //   node demo.js info
+//
+// Funciona con cualquier tipo de archivo (PDF, DOCX, imagenes, txt, etc.):
+// el hash keccak256 se calcula sobre los bytes crudos del archivo.
 //
 // Requiere un archivo .env con:
 //   SEPOLIA_RPC_URL=...
@@ -141,9 +147,33 @@ async function cmdConsultar(archivo) {
     console.log(`    titular:   ${doc.titular}`);
     console.log(`    tipo:      ${nombreTipo(doc.tipo)}`);
     console.log(`    registrado: ${fmtFecha(doc.timestamp)}\n`);
+  } else if (doc.existe && doc.revocado) {
+    console.log(`\n  >>> DOCUMENTO REVOCADO <<< (fue registrado pero ya no es valido)`);
+    console.log(`    emisor:    ${doc.emisor}`);
+    console.log(`    titular:   ${doc.titular}`);
+    console.log(`    registrado: ${fmtFecha(doc.timestamp)}\n`);
   } else {
     console.log(`\n  >>> DOCUMENTO NO REGISTRADO <<<\n`);
   }
+}
+
+async function cmdRevocarDoc(archivo) {
+  if (!archivo) {
+    console.error("Uso: node demo.js revocar-doc <archivo>");
+    process.exit(1);
+  }
+  const { contrato } = conectar();
+  const hash = hashDeArchivo(archivo);
+
+  console.log(`\n  Archivo: ${archivo}`);
+  console.log(`  Hash:    ${hash}`);
+  console.log(`\n  Enviando transaccion de revocacion...`);
+
+  const tx = await contrato.revocarDocumento(hash);
+  console.log(`  Tx enviada: ${linkTx(tx.hash)}`);
+  const receipt = await tx.wait();
+  console.log(`  Confirmada en bloque ${receipt.blockNumber}`);
+  console.log(`\n  Documento revocado. Ya no aparecera como valido.\n`);
 }
 
 async function cmdAutorizar(address) {
@@ -159,6 +189,37 @@ async function cmdAutorizar(address) {
   console.log(`  Confirmada en bloque ${receipt.blockNumber}`);
   const ok = await contrato.emisoresAutorizados(address);
   console.log(`  ¿Es emisor autorizado ahora? ${ok}\n`);
+}
+
+async function cmdRevocarEmisor(address) {
+  if (!address) {
+    console.error("Uso: node demo.js revocar-emisor <address>");
+    process.exit(1);
+  }
+  const { contrato } = conectar();
+  console.log(`\n  Revocando emisor: ${address}`);
+  const tx = await contrato.revocarEmisor(address);
+  console.log(`  Tx enviada: ${linkTx(tx.hash)}`);
+  const receipt = await tx.wait();
+  console.log(`  Confirmada en bloque ${receipt.blockNumber}`);
+  const ok = await contrato.emisoresAutorizados(address);
+  console.log(`  ¿Sigue siendo emisor autorizado? ${ok}\n`);
+}
+
+async function cmdTransferirAdmin(address) {
+  if (!address) {
+    console.error("Uso: node demo.js transferir-admin <address>");
+    process.exit(1);
+  }
+  const { contrato } = conectar();
+  console.log(`\n  ADVERTENCIA: esta accion transfiere el control total del contrato.`);
+  console.log(`  Transfiriendo admin a: ${address}`);
+  const tx = await contrato.transferirAdmin(address);
+  console.log(`  Tx enviada: ${linkTx(tx.hash)}`);
+  const receipt = await tx.wait();
+  console.log(`  Confirmada en bloque ${receipt.blockNumber}`);
+  const nuevoAdmin = await contrato.admin();
+  console.log(`  Nuevo admin: ${nuevoAdmin}\n`);
 }
 
 async function cmdInfo() {
@@ -177,17 +238,23 @@ async function cmdInfo() {
 async function main() {
   const [cmd, ...args] = process.argv.slice(2);
   switch (cmd) {
-    case "registrar": return cmdRegistrar(...args);
-    case "verificar": return cmdVerificar(...args);
-    case "consultar": return cmdConsultar(...args);
-    case "autorizar": return cmdAutorizar(...args);
-    case "info":      return cmdInfo();
+    case "registrar":        return cmdRegistrar(...args);
+    case "verificar":        return cmdVerificar(...args);
+    case "consultar":        return cmdConsultar(...args);
+    case "revocar-doc":      return cmdRevocarDoc(...args);
+    case "autorizar":        return cmdAutorizar(...args);
+    case "revocar-emisor":   return cmdRevocarEmisor(...args);
+    case "transferir-admin": return cmdTransferirAdmin(...args);
+    case "info":             return cmdInfo();
     default:
       console.log("Comandos disponibles:");
       console.log("  node demo.js registrar <archivo> <titular> <tipo>");
       console.log("  node demo.js verificar <archivo>");
       console.log("  node demo.js consultar <archivo>   (gratis, sin tx)");
+      console.log("  node demo.js revocar-doc <archivo>");
       console.log("  node demo.js autorizar <address>");
+      console.log("  node demo.js revocar-emisor <address>");
+      console.log("  node demo.js transferir-admin <address>");
       console.log("  node demo.js info");
   }
 }
