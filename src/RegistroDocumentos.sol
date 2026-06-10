@@ -4,6 +4,8 @@ pragma solidity ^0.8.24;
 /// @title RegistroDocumentos
 /// @notice Registro inmutable de hashes de documentos sensibles.
 /// @dev El documento real NO vive on-chain; solo se almacena su huella criptográfica.
+///      Funciona con cualquier tipo de archivo (PDF, DOCX, imágenes, etc.) porque
+///      el hash se calcula off-chain sobre los bytes crudos del archivo.
 contract RegistroDocumentos {
     enum TipoDocumento { Generico, Titulo, Certificado, Contrato, Identidad }
 
@@ -13,6 +15,7 @@ contract RegistroDocumentos {
         uint64  timestamp;    // momento del registro (block.timestamp)
         TipoDocumento tipo;   // categoría del documento
         bool    existe;       // flag para distinguir slot vacío
+        bool    revocado;     // true si el documento fue invalidado
     }
 
     address public admin;
@@ -25,6 +28,7 @@ contract RegistroDocumentos {
     // ---------- Eventos ----------
     event EmisorAutorizado(address indexed emisor, address indexed por);
     event EmisorRevocado(address indexed emisor, address indexed por);
+    event AdminTransferido(address indexed anterior, address indexed nuevo);
 
     event DocumentoRegistrado(
         bytes32 indexed hashDoc,
@@ -40,12 +44,19 @@ contract RegistroDocumentos {
         bool valido
     );
 
+    event DocumentoRevocado(
+        bytes32 indexed hashDoc,
+        address indexed por
+    );
+
     // ---------- Errores ----------
     error NoAutorizado();
     error SoloAdmin();
     error HashInvalido();
     error DocumentoYaExiste();
     error DocumentoNoExiste();
+    error DocumentoYaRevocado();
+    error DireccionInvalida();
 
     // ---------- Modifiers ----------
     modifier soloAdmin() {
@@ -66,6 +77,7 @@ contract RegistroDocumentos {
 
     // ---------- Gestión de roles ----------
     function autorizarEmisor(address emisor) external soloAdmin {
+        if (emisor == address(0)) revert DireccionInvalida();
         emisoresAutorizados[emisor] = true;
         emit EmisorAutorizado(emisor, msg.sender);
     }
@@ -73,6 +85,17 @@ contract RegistroDocumentos {
     function revocarEmisor(address emisor) external soloAdmin {
         emisoresAutorizados[emisor] = false;
         emit EmisorRevocado(emisor, msg.sender);
+    }
+
+    /// @notice Transfiere el rol de admin a otra dirección.
+    /// @dev El nuevo admin queda también como emisor autorizado.
+    function transferirAdmin(address nuevoAdmin) external soloAdmin {
+        if (nuevoAdmin == address(0)) revert DireccionInvalida();
+        address anterior = admin;
+        admin = nuevoAdmin;
+        emisoresAutorizados[nuevoAdmin] = true;
+        emit AdminTransferido(anterior, nuevoAdmin);
+        emit EmisorAutorizado(nuevoAdmin, anterior);
     }
 
     // ---------- Lógica principal ----------
@@ -93,20 +116,36 @@ contract RegistroDocumentos {
             titular: titular,
             timestamp: uint64(block.timestamp),
             tipo: tipo,
-            existe: true
+            existe: true,
+            revocado: false
         });
 
         emit DocumentoRegistrado(hashDoc, msg.sender, titular, tipo, uint64(block.timestamp));
     }
 
-    /// @notice Verifica si un hash está registrado y devuelve sus metadatos.
+    /// @notice Invalida un documento registrado (ej: título revocado, contrato anulado).
+    /// @dev Solo el emisor original del documento o el admin pueden revocarlo.
+    ///      El registro histórico se conserva; el documento deja de ser válido.
+    function revocarDocumento(bytes32 hashDoc) external {
+        Documento storage doc = documentos[hashDoc];
+        if (!doc.existe) revert DocumentoNoExiste();
+        if (doc.revocado) revert DocumentoYaRevocado();
+        if (msg.sender != doc.emisor && msg.sender != admin) revert NoAutorizado();
+
+        doc.revocado = true;
+        emit DocumentoRevocado(hashDoc, msg.sender);
+    }
+
+    /// @notice Verifica si un hash está registrado y vigente, y devuelve sus metadatos.
     /// @dev Emite un evento para dejar traza on-chain de la consulta.
+    ///      `valido` es false tanto para documentos inexistentes como revocados;
+    ///      el campo `doc.revocado` permite distinguir ambos casos.
     function verificar(bytes32 hashDoc)
         external
         returns (bool valido, Documento memory doc)
     {
         doc = documentos[hashDoc];
-        valido = doc.existe;
+        valido = doc.existe && !doc.revocado;
         emit DocumentoVerificado(hashDoc, msg.sender, valido);
     }
 
@@ -117,6 +156,6 @@ contract RegistroDocumentos {
         returns (bool valido, Documento memory doc)
     {
         doc = documentos[hashDoc];
-        valido = doc.existe;
+        valido = doc.existe && !doc.revocado;
     }
 }

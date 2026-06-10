@@ -8,10 +8,11 @@ Curso: TICS0870 | Grupo 8: Los Callampines
 
 | Componente | Estado |
 |---|---|
-| Smart contract `RegistroDocumentos.sol` | ✅ Completo |
-| Tests Forge (10 unitarios + fuzz) | ✅ Pasando |
-| Deploy en Sepolia | ✅ Desplegado |
-| Demo CLI (Node.js + ethers.js) | ✅ Probado on-chain |
+| Smart contract `RegistroDocumentos.sol` (v2: revocación + transferencia de admin) | ✅ Completo |
+| Tests Forge (21 tests: unitarios + fuzz) | ✅ Pasando |
+| Deploy en Sepolia | ⚠️ Desplegada la v1 — falta redeploy de la v2 |
+| Demo CLI (Node.js + ethers.js) | ✅ Actualizada para v2 |
+| Frontend web (`frontend/index.html`, MetaMask + ethers.js) | ✅ Listo (requiere contrato v2) |
 | README del repositorio | ✅ Listo |
 | Informe base (`INFORME_BASE.md`) | ✅ Borrador listo |
 | Verificación del contrato en Etherscan | ⬜ Pendiente |
@@ -133,8 +134,27 @@ cast call 0xd4C906016999E7DcD5E2708C011a975E5557a37c \
 
 ---
 
+## Novedades v2 del contrato (2026-06-10)
+
+- `revocarDocumento(bytes32)`: el emisor original o el admin pueden invalidar un documento. El registro histórico se conserva (`existe=true, revocado=true`) pero `consultar`/`verificar` lo reportan como no válido.
+- `transferirAdmin(address)`: el admin puede traspasar el control del contrato.
+- Validación de dirección cero en `autorizarEmisor` y `transferirAdmin`.
+- El struct `Documento` ahora incluye el campo `revocado` (cambia el ABI de `consultar`/`verificar`).
+- CLI: nuevos comandos `revocar-doc`, `revocar-emisor`, `transferir-admin`.
+- Frontend web en `frontend/index.html`: drag & drop de cualquier archivo (PDF, DOCX, imágenes — el hash se calcula en el navegador, el archivo nunca se sube), detección de rol (Admin/Emisor/Verificador), panel de administración.
+
+**IMPORTANTE:** la v2 cambia el ABI, por lo que hay que **redesplegar el contrato** y actualizar `CONTRACT_ADDRESS` en `demo/.env` y en el frontend:
+
+```bash
+forge script script/Deploy.s.sol --rpc-url $SEPOLIA_RPC_URL --account MiCuentaNueva --broadcast
+```
+
+---
+
 ## Pendientes para la entrega final
 
+- [ ] **Redesplegar el contrato v2 en Sepolia** y actualizar `CONTRACT_ADDRESS` en `demo/.env` y frontend
+- [ ] Registrar nuevamente los documentos de ejemplo en el contrato v2
 - [ ] Verificar el contrato en Etherscan (subir código fuente para que sea público)
 - [ ] Redactar informe formal en `.docx` a partir de `INFORME_BASE.md`
 - [ ] Grabar video demo siguiendo el flujo de la sección anterior
