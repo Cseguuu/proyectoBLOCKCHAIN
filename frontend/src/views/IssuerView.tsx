@@ -51,10 +51,11 @@ export function IssuerView() {
   return (
     <section className="rounded-xl border border-border bg-panel p-6">
       <div className="mb-5">
-        <h2 className="text-lg font-semibold">Emitir documentos</h2>
+        <h2 className="text-lg font-semibold">Emitir certificado · Registro Académico UAI</h2>
         <p className="mt-1 text-sm text-muted">
-          Como emisor autorizado puedes registrar la huella digital de un documento en la
-          blockchain, asociándola a un titular. También puedes revocar documentos que hayas emitido.
+          Como oficina autorizada puedes registrar la huella digital de un certificado en la
+          blockchain, asociándolo al alumno titular. También puedes revocar certificados que
+          hayas emitido (por ejemplo, si se anula o se reemplaza por una versión corregida).
         </p>
       </div>
 
@@ -115,7 +116,7 @@ export function IssuerView() {
           <div className="grid gap-3 sm:grid-cols-[1fr_200px]">
             <div>
               <label htmlFor="titular" className="mb-1 block text-xs text-muted">
-                Titular del documento (dirección Ethereum)
+                Alumno titular (dirección Ethereum)
               </label>
               <input
                 id="titular"
@@ -127,7 +128,7 @@ export function IssuerView() {
             </div>
             <div>
               <label htmlFor="tipo" className="mb-1 block text-xs text-muted">
-                Tipo de documento
+                Tipo de certificado
               </label>
               <select
                 id="tipo"

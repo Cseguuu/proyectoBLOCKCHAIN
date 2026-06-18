@@ -24,8 +24,9 @@ export const REGISTRO_ABI = [
   "event AdminTransferido(address indexed anterior, address indexed nuevo)",
 ];
 
-// Espejo del enum TipoDocumento del contrato.
-export const TIPOS = ["Generico", "Titulo", "Certificado", "Contrato", "Identidad"];
+// Espejo del enum TipoDocumento del contrato (documentos académicos UAI).
+// Tokens compactos para pasarlos por línea de comandos en la CLI.
+export const TIPOS = ["AlumnoRegular", "Titulo", "Notas", "Egreso", "Otro"];
 
 export function nombreTipo(n) {
   return TIPOS[Number(n)] ?? `Desconocido(${n})`;

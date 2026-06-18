@@ -38,11 +38,11 @@ export function VerifierView() {
   return (
     <section className="rounded-xl border border-border bg-panel p-6">
       <div className="mb-5">
-        <h2 className="text-lg font-semibold">Verificar autenticidad</h2>
+        <h2 className="text-lg font-semibold">Verificar un certificado</h2>
         <p className="mt-1 text-sm text-muted">
-          Sube cualquier archivo y comprueba si su huella digital está registrada en el contrato.
-          El archivo <strong className="text-text">nunca se sube</strong> — el hash se calcula en
-          tu navegador.
+          Arrastra el PDF del certificado UAI y comprueba si fue emitido oficialmente y sigue
+          vigente. El archivo <strong className="text-text">nunca se sube</strong> — su huella
+          digital se calcula en tu navegador y se compara con el registro on-chain.
         </p>
       </div>
 
@@ -61,7 +61,7 @@ export function VerifierView() {
           pendingLabel="Verificando…"
           className="w-full justify-center py-3 text-base"
         >
-          🔍 Verificar documento
+          🔍 Verificar certificado
         </TxButton>
         <p className="mt-2 text-center text-xs text-ok">
           Gratis · No necesitas wallet · No queda registro de tu consulta

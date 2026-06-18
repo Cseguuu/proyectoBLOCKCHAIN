@@ -34,8 +34,14 @@ export const REGISTRO_ABI = [
   "error DireccionInvalida()",
 ] as const;
 
-// Espejo del enum TipoDocumento del contrato.
-export const TIPOS = ["Genérico", "Título", "Certificado", "Contrato", "Identidad"] as const;
+// Espejo del enum TipoDocumento del contrato (documentos académicos UAI).
+export const TIPOS = [
+  "Certificado de Alumno Regular",
+  "Diploma de Título",
+  "Concentración de Notas",
+  "Certificado de Egreso",
+  "Otro",
+] as const;
 export type TipoDocumento = (typeof TIPOS)[number];
 
 // Forma decodificada del struct Documento que devuelven consultar()/verificar().

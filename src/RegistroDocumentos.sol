@@ -2,12 +2,20 @@
 pragma solidity ^0.8.24;
 
 /// @title RegistroDocumentos
-/// @notice Registro inmutable de hashes de documentos sensibles.
-/// @dev El documento real NO vive on-chain; solo se almacena su huella criptográfica.
-///      Funciona con cualquier tipo de archivo (PDF, DOCX, imágenes, etc.) porque
-///      el hash se calcula off-chain sobre los bytes crudos del archivo.
+/// @notice Registro inmutable de hashes de certificados académicos.
+/// @dev Caso de uso: una institución (ej: Universidad Adolfo Ibáñez) certifica de
+///      forma verificable documentos como certificados de alumno regular, diplomas
+///      de título o concentraciones de notas. El documento real NO vive on-chain;
+///      solo se almacena su huella criptográfica keccak256, calculada off-chain sobre
+///      los bytes crudos del archivo (funciona con PDF, DOCX, imágenes, etc.).
 contract RegistroDocumentos {
-    enum TipoDocumento { Generico, Titulo, Certificado, Contrato, Identidad }
+    enum TipoDocumento {
+        CertificadoAlumnoRegular,
+        DiplomaTitulo,
+        ConcentracionNotas,
+        CertificadoEgreso,
+        Otro
+    }
 
     struct Documento {
         address emisor;       // quien registró

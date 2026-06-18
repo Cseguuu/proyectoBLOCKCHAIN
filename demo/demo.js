@@ -65,7 +65,7 @@ function linkTx(hash) {
 async function cmdRegistrar(archivo, titular, tipo) {
   if (!archivo || !titular || tipo === undefined) {
     console.error("Uso: node demo.js registrar <archivo> <titular> <tipo>");
-    console.error("Tipos: Generico | Titulo | Certificado | Contrato | Identidad");
+    console.error("Tipos: AlumnoRegular | Titulo | Notas | Egreso | Otro");
     process.exit(1);
   }
   const { contrato } = conectar();
