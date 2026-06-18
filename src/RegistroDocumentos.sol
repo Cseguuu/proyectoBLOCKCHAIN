@@ -109,7 +109,7 @@ contract RegistroDocumentos {
     // ---------- Lógica principal ----------
 
     /// @notice Registra el hash de un documento.
-    /// @param hashDoc keccak256/sha256 del archivo original, calculado off-chain.
+    /// @param hashDoc keccak256 del archivo original, calculado off-chain.
     /// @param titular dirección del dueño del documento.
     /// @param tipo categoría del documento.
     function registrar(bytes32 hashDoc, address titular, TipoDocumento tipo)
