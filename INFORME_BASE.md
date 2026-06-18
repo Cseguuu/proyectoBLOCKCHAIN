@@ -1,4 +1,4 @@
-# Registro de Documentos Sensibles en Blockchain
+# Validador de Certificados Académicos UAI en Blockchain
 ## Proyecto Final — TICS0870
 
 **Grupo 8 — Los Callampines**
@@ -10,7 +10,7 @@ Fecha de entrega: junio 2026
 
 | Campo | Valor |
 |---|---|
-| Título | Sistema de Registro de Documentos Sensibles en Blockchain |
+| Título | Sistema de Validación de Certificados Académicos UAI en Blockchain |
 | Curso | TICS0870 — Blockchain |
 | Grupo | 8 — Los Callampines |
 | Integrantes | *(completar con nombres del grupo)* |
@@ -20,17 +20,17 @@ Fecha de entrega: junio 2026
 
 ## 2. Resumen Ejecutivo
 
-Este proyecto implementa un sistema de registro y verificación de autenticidad de documentos sensibles (títulos universitarios, certificados, contratos) sobre la red Ethereum. La solución almacena únicamente la **huella criptográfica** (`keccak256`) de cada documento en un contrato inteligente desplegado en la testnet Sepolia, sin exponer jamás el contenido original.
+Este proyecto implementa un prototipo de sistema de validación de certificados académicos de la Universidad Adolfo Ibáñez (UAI) sobre la red Ethereum. El caso de uso concreto: cuando la UAI emite un certificado (alumno regular, diploma de título, concentración de notas), registra su **huella criptográfica** (`keccak256`) en un contrato inteligente desplegado en Sepolia. Cualquier persona —un empleador, una embajada, otra institución— puede arrastrar el PDF recibido y confirmar en segundos su autenticidad, sin llamar a la universidad, sin confiar en un servidor central, sin costo.
 
 **Objetivos principales:**
-- Proveer un mecanismo de verificación público, auditable e inmutable.
-- Eliminar la dependencia de una autoridad centralizada para validar documentos.
-- Implementar un control de acceso por roles (Admin / Emisor / Verificador) con lógica de revocación.
+- Eliminar la dependencia de un intermediario central para validar certificados académicos.
+- Proveer un mecanismo de verificación público, auditable e inmutable accesible a cualquier persona.
+- Implementar un control de acceso por roles (Admin / Emisor / Verificador) que modela la jerarquía real: TI UAI → Registro Académico UAI → empleadores/instituciones.
 
 **Resultados obtenidos:**
-- Contrato `RegistroDocumentos` desplegado en Sepolia (`0x237b7111Be8436Ba3c74826C3C2DA6B3b2309cE1`).
+- Contrato `RegistroDocumentos` desplegado en Sepolia (`0x237b7111Be8436Ba3c74826C3C2DA6B3b2309cE1`), con tipos de documento nativos del contexto académico.
 - Suite de 21 tests (unitarios + fuzzing) con 100% de cobertura de la lógica de negocio.
-- Demo CLI en Node.js y frontend web (React + Vite + Tailwind) con dashboard por rol y conexión via MetaMask.
+- Demo CLI en Node.js y frontend web (React + Vite + Tailwind) con flujo guiado UAI y dashboard diferenciado por rol.
 
 ---
 
@@ -38,19 +38,34 @@ Este proyecto implementa un sistema de registro y verificación de autenticidad 
 
 ### Contexto y motivación
 
-En Chile y el mundo, la falsificación de documentos sensibles es un problema real. Los sistemas de verificación tradicionales dependen de bases de datos centralizadas susceptibles a manipulación interna, procesos lentos y sin trazabilidad pública.
+Cada año, miles de egresados de universidades chilenas deben demostrar la validez de sus títulos y certificados ante empleadores, entidades de gobierno o instituciones extranjeras. El proceso actual es ineficiente: el verificador debe contactar directamente a la universidad, esperar confirmación por correo o teléfono, y confiar en que la institución no fue comprometida internamente. En paralelo, la falsificación de diplomas y certificados académicos es un fraude documentado a nivel global — en Chile, la Superintendencia de Educación Superior ha reportado casos recurrentes de títulos apócrifos en concursos públicos y procesos de selección.
 
-La tecnología Blockchain resuelve esto mediante tres propiedades fundamentales:
-- **Inmutabilidad:** ningún registro puede modificarse retroactivamente.
-- **Transparencia:** cualquiera puede auditar el estado del contrato.
-- **Descentralización:** no existe un operador central que pueda falsificar o eliminar datos.
+Los sistemas de verificación tradicionales tienen tres puntos de falla críticos:
+- **Centralización:** la validez de un certificado depende de que la base de datos de la universidad esté disponible, no haya sido manipulada y sea accesible para el verificador.
+- **Ausencia de trazabilidad:** no queda registro de quién verificó qué ni cuándo, lo que dificulta auditorías posteriores.
+- **Fricción operacional:** el proceso requiere intermediación humana, emails y esperas que pueden durar días.
+
+Blockchain resuelve los tres problemas de raíz:
+- **Inmutabilidad:** ningún registro puede modificarse retroactivamente, ni siquiera por la propia UAI.
+- **Verificación sin permiso:** cualquier persona, en cualquier lugar, puede confirmar la autenticidad de un certificado sin necesidad de contactar a nadie.
+- **Trazabilidad pública:** cada emisión, verificación y revocación queda como evento inmutable en la cadena.
+
+### Caso de uso: Universidad Adolfo Ibáñez
+
+Este prototipo modela el flujo de certificación académica de la UAI:
+
+1. **La UAI emite** — cuando el Registro Académico genera un certificado (alumno regular, diploma de título, concentración de notas), registra su huella digital en el contrato. El PDF sigue siendo el mismo de siempre; la blockchain añade una prueba de autenticidad verificable globalmente.
+2. **El alumno recibe** — el estudiante recibe su certificado en PDF, idéntico al formato habitual. La prueba de autenticidad ya quedó on-chain en el momento de emisión.
+3. **Un tercero verifica** — un empleador, una embajada o una universidad extranjera arrastra el PDF al sistema y confirma en segundos si es auténtico. No necesita llamar a la UAI, no necesita una cuenta, no tiene costo.
+
+> **Nota:** Este sistema es un **prototipo académico**. El emisor "Registro Académico UAI" está simulado con una wallet de prueba para fines demostrativos del curso TICS0870; no es un servicio oficial de la Universidad Adolfo Ibáñez.
 
 ### Objetivos del proyecto
 
-1. Diseñar e implementar un contrato inteligente en Solidity para el registro de hashes de documentos.
-2. Implementar un sistema de roles (Admin, Emisor, Verificador) con autorización y revocación.
-3. Proporcionar herramientas de interacción: CLI para operadores técnicos y frontend web para usuarios generales.
-4. Desplegar el sistema en una red de pruebas pública (Sepolia) y verificar su funcionamiento.
+1. Diseñar e implementar un contrato inteligente en Solidity para el registro de certificados académicos.
+2. Implementar un sistema de roles (Admin / Emisor / Verificador) que modela la jerarquía institucional real.
+3. Proporcionar herramientas de interacción: CLI para operadores técnicos y frontend web para verificadores sin conocimiento técnico.
+4. Desplegar el sistema en una red de pruebas pública (Sepolia) y demostrar el flujo completo de emisión y verificación.
 
 ---
 
@@ -120,13 +135,13 @@ Una *Externally Owned Account* (EOA) es una cuenta de Ethereum controlada por un
 
 El contrato implementa tres roles con distintos niveles de acceso:
 
-| Rol | Cómo se obtiene | Permisos |
-|---|---|---|
-| **Admin** | Es quien despliega el contrato | Autorizar/revocar Emisores, transferir el rol de Admin |
-| **Emisor** | Autorizado por el Admin | Registrar documentos, revocar documentos propios |
-| **Verificador** | Cualquier dirección | Consultar y verificar documentos (gratis, sin permiso) |
+| Rol | Actor UAI | Cómo se obtiene | Permisos |
+|---|---|---|---|
+| **Admin** | Dirección de TI de la UAI | Despliega el contrato | Autorizar/revocar Emisores, transferir el rol de Admin |
+| **Emisor** | Registro Académico UAI | Autorizado por el Admin | Registrar certificados, revocar certificados propios |
+| **Verificador** | Empleador, embajada, institución | Cualquier persona | Consultar y verificar certificados (gratis, sin cuenta) |
 
-El Admin modela a la institución que opera el sistema (ej: Ministerio de Educación). Los Emisores modelan a entidades emisoras legítimas (universidades, notarías). Cualquier persona puede verificar sin necesitar cuenta.
+El Admin (TI UAI) no emite certificados: define qué oficinas institucionales pueden hacerlo. El Emisor (Registro Académico) es quien certifica los documentos académicos. El Verificador es cualquier persona que recibe un certificado y quiere confirmar su autenticidad — no necesita wallet, cuenta ni permiso previo.
 
 ### 5.3 Estructura del documento on-chain
 
@@ -137,7 +152,7 @@ struct Documento {
     address emisor;        // quien registró el documento (EOA autorizada)
     address titular;       // a quién pertenece el documento
     uint64  timestamp;     // momento exacto del registro (block.timestamp)
-    TipoDocumento tipo;    // categoría: Genérico, Título, Certificado, Contrato, Identidad
+    TipoDocumento tipo;    // categoría académica: CertificadoAlumnoRegular, DiplomaTitulo, ConcentracionNotas, CertificadoEgreso, Otro
     bool    existe;        // flag para distinguir "no registrado" de "valores en cero"
     bool    revocado;      // true si el documento fue invalidado
 }
@@ -145,25 +160,25 @@ struct Documento {
 
 **Lo que NO se almacena:** el archivo original, su nombre, su contenido. Solo el hash de 32 bytes. El documento real permanece bajo el control de su dueño.
 
-### 5.4 Flujo de registro
+### 5.4 Flujo de emisión (Registro Académico UAI)
 
-1. El Emisor tiene el archivo original (PDF, imagen, etc.).
-2. Calcula el hash off-chain: `keccak256(bytes_del_archivo)`.
-3. Llama a `registrar(hashDoc, titular, tipo)` firmando con su wallet.
-4. El contrato verifica que el Emisor está autorizado y que el hash no existe previamente.
-5. Almacena el struct `Documento` y emite el evento `DocumentoRegistrado`.
+1. El Registro Académico genera el certificado en PDF (mismo formato de siempre).
+2. Calcula la huella digital off-chain: `keccak256(bytes_del_PDF)`.
+3. Llama a `registrar(hashDoc, alumno, tipo)` firmando con su wallet autorizada.
+4. El contrato verifica que la wallet es un Emisor autorizado y que el hash no existe previamente.
+5. Almacena el struct `Documento` (emisor, alumno, timestamp, tipo) y emite el evento `DocumentoRegistrado`.
 
-### 5.5 Flujo de verificación
+### 5.5 Flujo de verificación (empleador, embajada, institución)
 
-1. El Verificador recibe el archivo a autenticar (puede ser cualquier persona).
-2. Calcula el hash del archivo con la misma función (`keccak256`).
-3. Llama a `consultar(hashDoc)` (gratis, sin wallet) o `verificar(hashDoc)` (deja traza on-chain).
-4. Si el hash está en el contrato y no fue revocado → documento auténtico.
-5. Si no está → el documento no fue emitido por este sistema, o fue alterado.
+1. El verificador recibe el PDF del certificado del alumno.
+2. Arrastra el archivo al frontend — el hash se calcula en el navegador, el PDF nunca se sube.
+3. Llama a `consultar(hashDoc)` (gratis, sin wallet ni costo) o `verificar(hashDoc)` (deja traza on-chain de la verificación).
+4. Si el hash está en el contrato y no fue revocado → certificado auténtico, con datos de emisor, alumno y fecha.
+5. Si el hash no coincide → el certificado no fue emitido por este sistema o fue alterado. Basta cambiar una nota, un nombre o una fecha para que el hash cambie completamente (propiedad de avalancha).
 
 ### 5.6 Flujo de revocación
 
-Un Emisor puede invalidar un documento que él mismo registró (ej: título revocado, contrato anulado). El Admin puede revocar cualquier documento. El registro histórico se conserva (`existe = true`), pero el documento deja de reportarse como válido (`revocado = true`). Esto permite distinguir tres estados: *válido*, *revocado* y *nunca registrado*.
+El Registro Académico puede invalidar un certificado que emitió (ej: alumno que abandona la carrera después de recibir un certificado de alumno regular, o una concentración de notas emitida con un error). El Admin (TI UAI) puede revocar cualquier certificado. El registro histórico se conserva (`existe = true`), pero el certificado deja de reportarse como válido (`revocado = true`). Esto permite distinguir tres estados: *auténtico*, *revocado* y *nunca emitido*.
 
 ### 5.7 Decisiones de diseño
 
@@ -276,10 +291,10 @@ node demo.js revocar-doc archivo.pdf                         # Revocar
 
 ### Frontend web
 
-dApp desplegable en Vercel/Netlify con dashboard diferenciado por rol:
-- **Verificador (público):** arrastra un archivo, su hash se calcula en el navegador, y se consulta el contrato. Sin wallet necesaria.
-- **Emisor:** panel para registrar (con titular y tipo) y revocar documentos propios.
-- **Admin:** panel para autorizar/revocar Emisores y transferir el control del contrato.
+dApp desplegable en Vercel/Netlify con flujo guiado por caso de uso UAI y dashboard diferenciado por rol:
+- **Verificador (público):** arrastra el PDF del certificado UAI, el hash se calcula en el navegador (el archivo nunca se sube) y se consulta el contrato. Sin wallet, sin costo, sin cuenta.
+- **Emisor (Registro Académico UAI):** panel para emitir certificados (con dirección del alumno y tipo académico) y revocarlos.
+- **Admin (TI UAI):** panel para autorizar/revocar qué oficinas pueden emitir y transferir el control del contrato.
 
 ```bash
 cd frontend && npm install && cp .env.example .env
@@ -326,11 +341,13 @@ Cada registro cuesta aproximadamente 72.000 gas. Con un precio de gas de 2 gwei 
 
 ## 10. Conclusiones
 
-Este proyecto demuestra cómo la blockchain de Ethereum puede resolver un problema real — la verificación de autenticidad de documentos — de forma descentralizada, pública e inmutable. Los conceptos criptográficos fundamentales del curso (funciones hash, propiedades de avalancha y resistencia a colisiones, firmas digitales, EOAs) son el núcleo de la solución: el hash `keccak256` es la prueba de integridad, y la firma de cada transacción es la prueba de autoría.
+Este proyecto demuestra cómo la blockchain de Ethereum puede resolver un problema real y concreto — la verificación de autenticidad de certificados académicos — de forma descentralizada, pública e inmutable. La solución está anclada en un caso de uso específico: la Universidad Adolfo Ibáñez emite certificados cuya huella digital queda registrada on-chain, de modo que cualquier empleador, embajada o institución puede verificarlos en segundos sin intermediarios ni costos.
 
-El sistema implementado va más allá de un registro simple: incluye revocación de documentos con preservación del historial, control de acceso por roles, transferencia de administración y una interfaz de usuario completa. La suite de 21 tests — incluyendo pruebas de fuzzing con 256 iteraciones aleatorias — valida que las invariantes del sistema se mantienen bajo cualquier entrada.
+Los conceptos criptográficos fundamentales del curso son el núcleo de la solución: `keccak256` garantiza que un certificado alterado (una nota cambiada, una fecha modificada) produce un hash completamente distinto (propiedad de avalancha), y la firma de cada transacción con una EOA es la prueba irrefutable de que fue el Registro Académico quien emitió el certificado y no otro actor.
 
-Las principales limitaciones identificadas (centralización del Admin, ausencia de confirmación del titular, riesgo de front-running) son inherentes a la arquitectura mínima elegida y tienen soluciones conocidas (multisig, EIP-712, commit-reveal) que representan extensiones naturales para una versión de producción.
+El sistema implementado va más allá de un registro simple: tipos de documento nativos del contexto académico, revocación con preservación del historial, control de acceso por roles que modela la jerarquía institucional real, transferencia de administración y una interfaz de usuario completa con flujo guiado para usuarios sin conocimiento técnico. La suite de 21 tests — incluyendo pruebas de fuzzing con 256 iteraciones — valida que las invariantes del sistema se mantienen bajo cualquier entrada.
+
+Las principales limitaciones identificadas (centralización del Admin, ausencia de confirmación del alumno titular, riesgo de front-running del hash) son inherentes a la arquitectura mínima elegida para el prototipo y tienen soluciones conocidas para una versión de producción: multisig para el Admin, EIP-712 para que el alumno confirme la recepción, y commit-reveal para mitigar el front-running.
 
 ---
 
