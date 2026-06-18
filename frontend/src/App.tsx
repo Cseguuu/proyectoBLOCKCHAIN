@@ -3,6 +3,8 @@ import { useWallet } from "./hooks/useWallet";
 import { WalletBar } from "./components/WalletBar";
 import { NetworkGuard } from "./components/NetworkGuard";
 import { EventTable } from "./components/EventTable";
+import { Icon, type IconName } from "./components/Icon";
+import { Seal } from "./components/Seal";
 import { VerifierView } from "./views/VerifierView";
 import { IssuerView } from "./views/IssuerView";
 import { AdminView } from "./views/AdminView";
@@ -17,11 +19,11 @@ export function App() {
   const puedeAdmin = rol === "admin";
 
   // Solo se muestran las pestañas que el rol actual puede usar (progressive disclosure).
-  const tabs: { id: Tab; icon: string; label: string }[] = [
-    { id: "verificar", icon: "🔍", label: "Verificar" },
+  const tabs: { id: Tab; icon: IconName; label: string }[] = [
+    { id: "verificar", icon: "verify", label: "Verificar" },
   ];
-  if (puedeEmitir) tabs.push({ id: "emitir", icon: "🖋️", label: "Emitir" });
-  if (puedeAdmin) tabs.push({ id: "admin", icon: "⚙️", label: "Admin" });
+  if (puedeEmitir) tabs.push({ id: "emitir", icon: "quill", label: "Emitir" });
+  if (puedeAdmin) tabs.push({ id: "admin", icon: "shield", label: "Admin" });
 
   // Si el rol pierde acceso a la pestaña activa (ej: desconecta wallet), volver a verificar.
   const tabActiva: Tab = tabs.some((t) => t.id === tab) ? tab : "verificar";
@@ -30,34 +32,42 @@ export function App() {
   const walletSinPermisos = !!address && rol === "verificador";
 
   return (
-    <div className="min-h-screen bg-bg">
+    <div className="min-h-screen">
       <div className="mx-auto max-w-5xl px-4 py-8">
-        {/* Header */}
+        {/* Membrete institucional */}
         <header className="mb-6">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">
-                🎓 Validador de Certificados UAI
-              </h1>
-              <p className="mt-1.5 text-sm text-muted">
-                Comprueba la autenticidad de certificados académicos de la Universidad Adolfo
-                Ibáñez (alumno regular, título, notas) usando{" "}
-                <span className="text-text font-medium">Ethereum Sepolia</span>. El certificado
-                nunca se sube — solo se compara su huella digital{" "}
-                <span className="font-mono text-accent">keccak256</span> con el registro
-                inmutable en blockchain.
-              </p>
+          <div className="sheet overflow-hidden">
+            {/* Banda superior granate */}
+            <div className="h-1.5 bg-accent" />
+            <div className="flex items-start gap-5 p-6">
+              <Seal size={92} className="hidden shrink-0 sm:block" />
+              <div className="min-w-0 flex-1">
+                <p className="label-officio mb-1">Registro Académico · Universidad Adolfo Ibáñez</p>
+                <h1 className="font-display text-3xl font-semibold leading-tight tracking-tight sm:text-[2.1rem]">
+                  Verificación de certificados en blockchain
+                </h1>
+                <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
+                  Comprueba la autenticidad de certificados académicos (alumno regular, título,
+                  notas) sobre <span className="font-medium text-text">Ethereum Sepolia</span>. El
+                  certificado nunca se sube — solo se compara su huella digital{" "}
+                  <span className="font-mono text-accent">keccak256</span> con el registro inmutable
+                  en blockchain.
+                </p>
+              </div>
+              <span className="hidden shrink-0 rounded-[2px] border border-line px-3 py-1 font-mono text-xs text-muted lg:block">
+                TICS0870 · Grupo 8
+              </span>
             </div>
-            <span className="hidden shrink-0 rounded-full border border-border px-3 py-1 text-xs text-muted sm:block">
-              TICS0870 · Grupo 8
-            </span>
           </div>
 
           {/* Disclaimer: prototipo, no oficial */}
-          <p className="mt-3 rounded-md border border-warn/30 bg-warn/5 px-3 py-2 text-xs text-muted">
-            ⚠️ <strong className="text-text">Prototipo académico.</strong> No es un servicio
-            oficial de la Universidad Adolfo Ibáñez; el emisor "Registro Académico UAI" está
-            simulado con fines demostrativos para el curso TICS0870.
+          <p className="mt-3 flex items-start gap-2 rounded-[3px] border border-warn/40 border-l-4 border-l-warn bg-warn/5 px-3 py-2 text-xs text-muted">
+            <Icon name="warning" size={15} className="mt-px shrink-0 text-warn" />
+            <span>
+              <strong className="text-text">Prototipo académico.</strong> No es un servicio oficial
+              de la Universidad Adolfo Ibáñez; el emisor "Registro Académico UAI" está simulado con
+              fines demostrativos para el curso TICS0870.
+            </span>
           </p>
         </header>
 
@@ -69,56 +79,54 @@ export function App() {
         {!address && (
           <>
             {/* Flujo guiado: la historia del caso de uso */}
-            <div className="mb-6 rounded-xl border border-border bg-panel p-5">
-              <p className="mb-4 text-xs font-medium uppercase tracking-wider text-muted">
-                ¿Cómo funciona?
-              </p>
-              <div className="grid gap-3 sm:grid-cols-3">
+            <div className="mb-6 sheet p-6">
+              <p className="label-officio mb-1">¿Cómo funciona?</p>
+              <div className="rule-double mb-4" />
+              <div className="grid gap-4 sm:grid-cols-3">
                 <FlowStep
                   n={1}
-                  icon="🏛️"
+                  icon="institution"
                   title="UAI emite"
                   desc="El Registro Académico de la UAI registra la huella del certificado en la blockchain al momento de emitirlo."
                 />
                 <FlowStep
                   n={2}
-                  icon="🎓"
+                  icon="student"
                   title="El alumno recibe"
                   desc="El estudiante recibe su certificado en PDF, idéntico al de siempre. La prueba de autenticidad ya quedó on-chain."
                 />
                 <FlowStep
                   n={3}
-                  icon="✅"
+                  icon="verify"
                   title="Un tercero verifica"
                   desc="Un empleador o embajada arrastra el PDF aquí y confirma en segundos que es auténtico, sin llamar a la universidad."
                 />
               </div>
             </div>
 
-            <div className="mb-6">
-              <p className="mb-3 text-xs font-medium uppercase tracking-wider text-muted">
-                ¿Quién es quién?
-              </p>
-              <div className="grid gap-3 sm:grid-cols-3">
+            <div className="mb-6 sheet p-6">
+              <p className="label-officio mb-1">¿Quién es quién?</p>
+              <div className="rule-double mb-4" />
+              <div className="grid gap-4 sm:grid-cols-3">
                 <RoleCard
-                  icon="🔍"
+                  icon="verify"
                   title="Verificador"
                   badge="Tú, ahora"
-                  badgeCls="bg-[#45525f]"
+                  badgeCls="border-muted text-muted"
                   desc="Empleador, embajada o institución que recibe un certificado y quiere confirmar que es auténtico. Gratis y sin wallet."
                 />
                 <RoleCard
-                  icon="🏛️"
+                  icon="institution"
                   title="Emisor (Registro UAI)"
                   badge="Conecta wallet"
-                  badgeCls="bg-[#1f6e42]"
+                  badgeCls="border-ok text-ok"
                   desc="La oficina del Registro Académico UAI: emite los certificados oficiales y puede revocarlos. Requiere una wallet autorizada."
                 />
                 <RoleCard
-                  icon="⚙️"
+                  icon="shield"
                   title="Admin (TI UAI)"
                   badge="Conecta wallet"
-                  badgeCls="bg-[#5b3fb9]"
+                  badgeCls="border-navy text-navy"
                   desc="Dirección de TI de la universidad: define qué oficinas pueden emitir certificados. No emite: gestiona los permisos."
                 />
               </div>
@@ -128,16 +136,19 @@ export function App() {
 
         {/* Aviso: wallet conectada sin permisos especiales */}
         {walletSinPermisos && (
-          <div className="mb-5 rounded-lg border border-border bg-panel/60 px-4 py-3 text-sm text-muted">
-            ℹ️ Esta wallet puede <strong className="text-text">verificar certificados</strong>, pero
-            no está autorizada como emisor ni admin. Para emitir certificados, la dirección de TI
-            de la UAI debe autorizar tu wallet.
+          <div className="mb-5 flex items-start gap-2 rounded-[3px] border border-border border-l-4 border-l-muted bg-panel px-4 py-3 text-sm text-muted">
+            <Icon name="info" size={16} className="mt-0.5 shrink-0 text-navy" />
+            <span>
+              Esta wallet puede <strong className="text-text">verificar certificados</strong>, pero
+              no está autorizada como emisor ni admin. Para emitir certificados, la dirección de TI
+              de la UAI debe autorizar tu wallet.
+            </span>
           </div>
         )}
 
         {/* Navegación por pestañas — solo aparece si hay más de una disponible */}
         {tabs.length > 1 && (
-          <nav className="mb-5 flex gap-1.5" aria-label="Secciones">
+          <nav className="mb-5 flex gap-1.5 border-b border-line" aria-label="Secciones">
             {tabs.map((t) => {
               const activa = tabActiva === t.id;
               return (
@@ -146,13 +157,13 @@ export function App() {
                   type="button"
                   onClick={() => setTab(t.id)}
                   aria-current={activa}
-                  className={`flex items-center gap-1.5 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all ${
+                  className={`-mb-px flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-semibold transition-colors ${
                     activa
-                      ? "bg-accent text-white shadow-sm"
-                      : "border border-border text-muted hover:border-accent/50 hover:text-text"
+                      ? "border-accent text-accent"
+                      : "border-transparent text-muted hover:text-text"
                   }`}
                 >
-                  <span>{t.icon}</span>
+                  <Icon name={t.icon} size={16} />
                   <span>{t.label}</span>
                 </button>
               );
@@ -168,9 +179,8 @@ export function App() {
           <EventTable />
         </main>
 
-        <footer className="mt-10 text-center text-xs text-muted">
-          Proyecto final TICS0870 · Grupo 8 "Los Callampines" · Solidity + Foundry + React +
-          ethers v6
+        <footer className="mt-10 border-t border-border pt-5 text-center font-mono text-xs text-muted">
+          Proyecto final TICS0870 · Grupo 8 "Los Callampines" · Solidity + Foundry + React + ethers v6
         </footer>
       </div>
     </div>
@@ -184,20 +194,20 @@ function FlowStep({
   desc,
 }: {
   n: number;
-  icon: string;
+  icon: IconName;
   title: string;
   desc: string;
 }) {
   return (
-    <div className="relative rounded-lg border border-border bg-bg/40 p-4">
+    <div className="relative rounded-[3px] border border-border bg-inset/50 p-4">
       <div className="mb-2 flex items-center gap-2">
-        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-xs font-bold text-white">
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent font-mono text-xs font-bold text-panel">
           {n}
         </span>
-        <span className="text-lg">{icon}</span>
-        <span className="font-semibold text-text">{title}</span>
+        <Icon name={icon} size={18} className="text-accent" />
+        <span className="font-display font-semibold text-text">{title}</span>
       </div>
-      <p className="text-xs text-muted leading-relaxed">{desc}</p>
+      <p className="text-xs leading-relaxed text-muted">{desc}</p>
     </div>
   );
 }
@@ -209,22 +219,24 @@ function RoleCard({
   badgeCls,
   desc,
 }: {
-  icon: string;
+  icon: IconName;
   title: string;
   badge: string;
   badgeCls: string;
   desc: string;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-panel p-4">
+    <div className="rounded-[3px] border border-border bg-inset/50 p-4">
       <div className="mb-2 flex items-center gap-2">
-        <span className="text-xl">{icon}</span>
-        <span className="font-semibold text-text">{title}</span>
-        <span className={`ml-auto rounded-full px-2 py-0.5 text-xs font-bold text-white ${badgeCls}`}>
+        <Icon name={icon} size={20} className="text-text" />
+        <span className="font-display font-semibold text-text">{title}</span>
+        <span
+          className={`ml-auto rounded-[2px] border px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider ${badgeCls}`}
+        >
           {badge}
         </span>
       </div>
-      <p className="text-xs text-muted leading-relaxed">{desc}</p>
+      <p className="text-xs leading-relaxed text-muted">{desc}</p>
     </div>
   );
 }

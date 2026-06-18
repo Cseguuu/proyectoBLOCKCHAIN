@@ -3,6 +3,7 @@ import { isAddress } from "ethers";
 import { useWallet } from "../hooks/useWallet";
 import { useToast } from "../components/Toaster";
 import { TxButton } from "../components/TxButton";
+import { Icon } from "../components/Icon";
 import { linkTx } from "../lib/format";
 
 export function AdminView() {
@@ -46,9 +47,7 @@ export function AdminView() {
     const ok = await contratoLectura().emisoresAutorizados(emisor);
     toast.push(
       ok ? "ok" : "info",
-      ok
-        ? `✅ ${emisor} SÍ es emisor autorizado.`
-        : `ℹ️ ${emisor} NO es emisor autorizado.`,
+      ok ? `${emisor} SÍ es emisor autorizado.` : `${emisor} NO es emisor autorizado.`,
     );
   }
 
@@ -69,20 +68,24 @@ export function AdminView() {
   }
 
   return (
-    <section className="rounded-xl border border-[#5b3fb9]/40 bg-panel p-6">
-      <div className="mb-6">
-        <h2 className="text-lg font-semibold">Panel de administración</h2>
-        <p className="mt-1 text-sm text-muted">
-          Tu wallet{" "}
-          <span className="font-mono text-xs text-text">{address}</span> tiene control total
-          del contrato. Desde aquí puedes gestionar emisores y traspasar el admin.
-        </p>
+    <section className="sheet border-t-4 border-t-navy p-6 sm:p-7">
+      <div className="mb-1 flex items-center gap-2">
+        <Icon name="shield" size={22} className="text-navy" />
+        <h2 className="font-display text-2xl font-semibold">Panel de administración</h2>
       </div>
+      <div className="rule-double mb-4" />
+      <p className="mb-6 text-sm leading-relaxed text-muted">
+        Tu wallet <span className="font-mono text-xs text-text">{address}</span> tiene control
+        total del contrato. Desde aquí puedes gestionar emisores y traspasar el admin.
+      </p>
 
       {/* Gestión de emisores */}
-      <div className="rounded-lg border border-border p-4">
-        <h3 className="mb-1 text-sm font-semibold text-text">Gestión de emisores</h3>
-        <p className="mb-4 text-xs text-muted">
+      <div className="rounded-[3px] border border-border p-4">
+        <h3 className="flex items-center gap-2 font-display text-base font-semibold">
+          <Icon name="key" size={17} className="text-accent" />
+          Gestión de emisores
+        </h3>
+        <p className="mb-4 mt-1 text-xs text-muted">
           Los emisores autorizados pueden registrar y revocar documentos. Puedes añadir o quitar
           wallets en cualquier momento.
         </p>
@@ -96,27 +99,33 @@ export function AdminView() {
             value={emisor}
             onChange={(e) => setEmisor(e.target.value)}
             placeholder="0x…"
-            className="w-full rounded-md border border-border bg-bg px-3 py-2.5 font-mono text-sm text-text outline-none focus:border-accent transition-colors"
+            className="w-full rounded-[3px] border border-line bg-panel px-3 py-2.5 font-mono text-sm text-text outline-none transition-colors focus:border-accent"
           />
         </div>
 
         <div className="flex flex-wrap gap-2">
           <TxButton onRun={autorizar} pendingLabel="Autorizando…">
-            ✅ Autorizar como emisor
+            <Icon name="check" size={16} />
+            Autorizar como emisor
           </TxButton>
           <TxButton variant="danger" onRun={revocarEmisor} pendingLabel="Revocando…">
-            🚫 Revocar emisor
+            <Icon name="ban" size={16} />
+            Revocar emisor
           </TxButton>
           <TxButton variant="secondary" onRun={comprobar} pendingLabel="Consultando…">
-            🔍 ¿Es emisor?
+            <Icon name="verify" size={16} />
+            ¿Es emisor?
           </TxButton>
         </div>
       </div>
 
       {/* Transferir admin */}
-      <div className="mt-4 rounded-lg border border-bad/30 p-4">
-        <h3 className="mb-1 text-sm font-semibold text-text">Transferir admin</h3>
-        <p className="mb-4 text-xs text-muted">
+      <div className="mt-4 rounded-[3px] border border-bad/40 border-l-4 border-l-bad p-4">
+        <h3 className="flex items-center gap-2 font-display text-base font-semibold">
+          <Icon name="warning" size={17} className="text-bad" />
+          Transferir admin
+        </h3>
+        <p className="mb-4 mt-1 text-xs text-muted">
           Traspasa el control del contrato a otra wallet. Esta acción es{" "}
           <strong className="text-bad">irreversible</strong>: perderás todos los permisos de
           administración.
@@ -131,12 +140,13 @@ export function AdminView() {
             value={nuevoAdmin}
             onChange={(e) => setNuevoAdmin(e.target.value)}
             placeholder="0x…"
-            className="w-full rounded-md border border-border bg-bg px-3 py-2.5 font-mono text-sm text-text outline-none focus:border-accent transition-colors"
+            className="w-full rounded-[3px] border border-line bg-panel px-3 py-2.5 font-mono text-sm text-text outline-none transition-colors focus:border-accent"
           />
         </div>
 
         <TxButton variant="danger" onRun={transferir} pendingLabel="Transfiriendo…">
-          ⚠️ Transferir control del contrato
+          <Icon name="warning" size={16} />
+          Transferir control del contrato
         </TxButton>
       </div>
     </section>

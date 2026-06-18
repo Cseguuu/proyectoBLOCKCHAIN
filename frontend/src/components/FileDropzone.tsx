@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { hashDeArchivo } from "../lib/hash";
+import { Icon } from "./Icon";
 
 interface Props {
   onSelect: (file: File, hash: string) => void;
@@ -14,7 +15,7 @@ export function FileDropzone({ onSelect }: Props) {
   async function procesar(file: File) {
     const h = await hashDeArchivo(file);
     const kb = (file.size / 1024).toFixed(1);
-    setInfo(`📎 ${file.name} (${kb} KB, ${file.type || "tipo desconocido"})`);
+    setInfo(`${file.name} · ${kb} KB · ${file.type || "tipo desconocido"}`);
     setHash(h);
     onSelect(file, h);
   }
@@ -39,14 +40,17 @@ export function FileDropzone({ onSelect }: Props) {
           setOver(false);
           if (e.dataTransfer.files.length) void procesar(e.dataTransfer.files[0]);
         }}
-        className={`cursor-pointer rounded-xl border-2 border-dashed p-8 text-center transition ${
-          over ? "border-accent bg-accent/5 text-text" : "border-border text-muted"
+        className={`flex cursor-pointer flex-col items-center gap-2 rounded-[3px] border border-dashed p-8 text-center transition-colors ${
+          over ? "border-accent bg-accent/5 text-text" : "border-line bg-inset/40 text-muted hover:border-accent/60"
         }`}
       >
-        <p className="text-sm">📄 Arrastra cualquier archivo aquí o haz clic para elegir</p>
-        <p className="mt-1 text-xs text-muted">
-          PDF, DOCX, imágenes, TXT — cualquier formato. El archivo nunca sale de tu navegador:
-          solo se calcula su hash keccak256.
+        <Icon name="document" size={30} className="text-accent" />
+        <p className="text-sm font-medium text-text">
+          Arrastra el documento aquí o haz clic para elegir
+        </p>
+        <p className="max-w-md text-xs text-muted">
+          PDF, DOCX, imágenes, TXT — cualquier formato. El archivo nunca sale de tu
+          navegador: solo se calcula su huella keccak256.
         </p>
         <input
           ref={inputRef}
@@ -58,10 +62,16 @@ export function FileDropzone({ onSelect }: Props) {
         />
       </div>
 
-      {info && <p className="mt-2 text-sm text-text">{info}</p>}
+      {info && (
+        <p className="mt-2.5 flex items-center gap-1.5 text-sm text-text">
+          <Icon name="check" size={15} className="text-ok" />
+          {info}
+        </p>
+      )}
       {hash && (
-        <div className="mt-3 break-all rounded-md border border-border bg-bg p-2.5 font-mono text-xs text-accent">
-          keccak256: {hash}
+        <div className="mt-2 break-all rounded-[3px] border border-border bg-inset px-3 py-2 font-mono text-xs text-accent">
+          <span className="text-muted">keccak256: </span>
+          {hash}
         </div>
       )}
     </div>

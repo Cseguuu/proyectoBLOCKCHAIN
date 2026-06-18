@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from "react";
+import { Icon, type IconName } from "./Icon";
 
 type ToastKind = "info" | "ok" | "bad" | "warn";
 
@@ -16,13 +17,18 @@ interface ToastApi {
 const ToastCtx = createContext<ToastApi | null>(null);
 
 const STYLES: Record<ToastKind, string> = {
-  info: "border-accent/60 bg-accent/10",
-  ok: "border-ok/60 bg-ok/10",
-  bad: "border-bad/60 bg-bad/10",
-  warn: "border-warn/60 bg-warn/10",
+  info: "border-l-navy",
+  ok: "border-l-ok",
+  bad: "border-l-bad",
+  warn: "border-l-warn",
 };
 
-const ICONS: Record<ToastKind, string> = { info: "ℹ️", ok: "✅", bad: "❌", warn: "⚠️" };
+const ICONS: Record<ToastKind, { name: IconName; cls: string }> = {
+  info: { name: "info", cls: "text-navy" },
+  ok: { name: "check", cls: "text-ok" },
+  bad: { name: "x", cls: "text-bad" },
+  warn: { name: "warning", cls: "text-warn" },
+};
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -40,30 +46,36 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastCtx.Provider value={{ push }}>
       {children}
       <div
-        className="fixed bottom-4 right-4 z-50 flex w-[min(92vw,360px)] flex-col gap-2"
+        className="fixed bottom-4 right-4 z-50 flex w-[min(92vw,380px)] flex-col gap-2"
         aria-live="polite"
         aria-atomic="false"
       >
-        {toasts.map((t) => (
-          <div
-            key={t.id}
-            role="status"
-            className={`rounded-lg border px-4 py-3 text-sm shadow-lg backdrop-blur ${STYLES[t.kind]}`}
-          >
-            <span className="mr-2">{ICONS[t.kind]}</span>
-            {t.msg}
-            {t.link && (
-              <a
-                href={t.link.href}
-                target="_blank"
-                rel="noreferrer"
-                className="ml-2 text-accent underline"
-              >
-                {t.link.label} ↗
-              </a>
-            )}
-          </div>
-        ))}
+        {toasts.map((t) => {
+          const ic = ICONS[t.kind];
+          return (
+            <div
+              key={t.id}
+              role="status"
+              className={`flex items-start gap-2.5 rounded-[3px] border border-border border-l-4 bg-panel px-4 py-3 text-sm text-text shadow-sheet ${STYLES[t.kind]}`}
+            >
+              <Icon name={ic.name} size={17} className={`mt-0.5 shrink-0 ${ic.cls}`} />
+              <span className="min-w-0">
+                {t.msg}
+                {t.link && (
+                  <a
+                    href={t.link.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="ml-1.5 inline-flex items-center gap-0.5 font-medium text-accent underline underline-offset-2"
+                  >
+                    {t.link.label}
+                    <Icon name="external" size={13} />
+                  </a>
+                )}
+              </span>
+            </div>
+          );
+        })}
       </div>
     </ToastCtx.Provider>
   );
