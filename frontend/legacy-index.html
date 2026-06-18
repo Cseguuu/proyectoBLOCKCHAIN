@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registro de Documentos — Blockchain</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1419; --panel: #1a2129; --border: #2d3742;
+    --text: #e6e8ea; --muted: #8b97a3; --accent: #4f9cf9;
+    --ok: #3fb96a; --bad: #e05858; --warn: #e0a93f;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg); color: var(--text);
+    min-height: 100vh; padding: 2rem 1rem;
+  }
+  .container { max-width: 880px; margin: 0 auto; }
+  h1 { font-size: 1.5rem; margin-bottom: .25rem; }
+  .subtitle { color: var(--muted); font-size: .9rem; margin-bottom: 1.5rem; }
+  .panel {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1.25rem; margin-bottom: 1rem;
+  }
+  .panel h2 { font-size: 1rem; margin-bottom: .75rem; color: var(--accent); }
+  button {
+    background: var(--accent); color: #fff; border: none;
+    padding: .55rem 1.1rem; border-radius: 6px; font-size: .9rem;
+    cursor: pointer; font-weight: 600;
+  }
+  button:hover { filter: brightness(1.15); }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  button.secondary { background: var(--border); }
+  button.danger { background: var(--bad); }
+  input, select {
+    background: var(--bg); color: var(--text);
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: .5rem .7rem; font-size: .9rem; width: 100%;
+  }
+  label { font-size: .8rem; color: var(--muted); display: block; margin: .6rem 0 .25rem; }
+  .row { display: flex; gap: .75rem; flex-wrap: wrap; align-items: flex-end; }
+  .row > div { flex: 1; min-width: 200px; }
+  .wallet-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: .75rem; }
+  .badge {
+    display: inline-block; padding: .2rem .6rem; border-radius: 99px;
+    font-size: .75rem; font-weight: 700; letter-spacing: .03em;
+  }
+  .badge.admin { background: #5b3fb9; }
+  .badge.emisor { background: #1f6e42; }
+  .badge.verificador { background: #45525f; }
+  .dropzone {
+    border: 2px dashed var(--border); border-radius: 10px;
+    padding: 2rem; text-align: center; color: var(--muted);
+    cursor: pointer; transition: all .15s;
+  }
+  .dropzone:hover, .dropzone.over { border-color: var(--accent); color: var(--text); background: rgba(79,156,249,.05); }
+  .hash-box {
+    font-family: 'Consolas', monospace; font-size: .78rem;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: .6rem; margin-top: .75rem;
+    word-break: break-all; color: var(--accent);
+  }
+  .result { margin-top: 1rem; padding: 1rem; border-radius: 8px; font-size: .9rem; display: none; }
+  .result.show { display: block; }
+  .result.ok { background: rgba(63,185,106,.12); border: 1px solid var(--ok); }
+  .result.bad { background: rgba(224,88,88,.12); border: 1px solid var(--bad); }
+  .result.warn { background: rgba(224,169,63,.12); border: 1px solid var(--warn); }
+  .result h3 { font-size: 1rem; margin-bottom: .5rem; }
+  .result dl { display: grid; grid-template-columns: auto 1fr; gap: .25rem .75rem; font-size: .82rem; }
+  .result dt { color: var(--muted); }
+  .result dd { font-family: 'Consolas', monospace; word-break: break-all; }
+  .actions { display: flex; gap: .6rem; margin-top: 1rem; flex-wrap: wrap; }
+  .log {
+    font-family: 'Consolas', monospace; font-size: .76rem;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: .7rem; margin-top: .75rem;
+    max-height: 180px; overflow-y: auto; white-space: pre-wrap;
+    color: var(--muted); display: none;
+  }
+  .log.show { display: block; }
+  .log a { color: var(--accent); }
+  .hidden { display: none !important; }
+  .file-info { margin-top: .5rem; font-size: .85rem; color: var(--text); }
+  .mini { font-size: .75rem; color: var(--muted); margin-top: .5rem; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🔗 Registro de Documentos en Blockchain</h1>
+  <p class="subtitle">Verificación de autenticidad de documentos sobre Ethereum Sepolia — TICS0870</p>
+
+  <!-- Conexión -->
+  <div class="panel">
+    <div class="wallet-bar">
+      <div>
+        <div id="walletAddr" style="font-family:monospace; font-size:.85rem;">No conectado</div>
+        <div id="walletRole" style="margin-top:.3rem;"></div>
+      </div>
+      <button id="btnConectar">Conectar MetaMask</button>
+    </div>
+    <label>Dirección del contrato (Sepolia)</label>
+    <input id="contractAddr" placeholder="0x..." />
+    <p class="mini">El contrato debe estar desplegado en Sepolia. Cambia esta dirección si redespliegas.</p>
+  </div>
+
+  <!-- Documento -->
+  <div class="panel">
+    <h2>1 · Selecciona un documento</h2>
+    <div class="dropzone" id="dropzone">
+      <p>📄 Arrastra cualquier archivo aquí o haz clic para elegir</p>
+      <p class="mini">PDF, DOCX, imágenes, TXT — cualquier formato. El archivo nunca sale de tu navegador: solo se calcula su hash keccak256.</p>
+      <input type="file" id="fileInput" hidden />
+    </div>
+    <div id="fileInfo" class="file-info"></div>
+    <div id="hashBox" class="hash-box hidden"></div>
+  </div>
+
+  <!-- Acciones sobre el documento -->
+  <div class="panel" id="panelAcciones" style="display:none;">
+    <h2>2 · Acciones</h2>
+    <div class="actions">
+      <button id="btnConsultar" class="secondary">🔍 Consultar (gratis)</button>
+      <button id="btnVerificar" class="secondary">📝 Verificar (deja traza on-chain)</button>
+      <button id="btnRevocarDoc" class="danger hidden">🚫 Revocar documento</button>
+    </div>
+
+    <div id="registroForm" class="hidden">
+      <div class="row" style="margin-top:1rem;">
+        <div>
+          <label>Titular (dirección Ethereum)</label>
+          <input id="inpTitular" placeholder="0x..." />
+        </div>
+        <div style="max-width:180px;">
+          <label>Tipo de documento</label>
+          <select id="selTipo">
+            <option value="0">Genérico</option>
+            <option value="1">Título</option>
+            <option value="2">Certificado</option>
+            <option value="3">Contrato</option>
+            <option value="4">Identidad</option>
+          </select>
+        </div>
+        <div style="max-width:160px;">
+          <button id="btnRegistrar" style="width:100%;">✅ Registrar</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="resultado" class="result"></div>
+    <div id="log" class="log"></div>
+  </div>
+
+  <!-- Panel de administración -->
+  <div class="panel hidden" id="panelAdmin">
+    <h2>⚙️ Panel de administración (solo Admin)</h2>
+    <div class="row">
+      <div>
+        <label>Dirección del emisor</label>
+        <input id="inpEmisor" placeholder="0x..." />
+      </div>
+      <div style="max-width:380px; display:flex; gap:.5rem;">
+        <button id="btnAutorizar">Autorizar</button>
+        <button id="btnRevocarEmisor" class="danger">Revocar</button>
+        <button id="btnCheckEmisor" class="secondary">¿Es emisor?</button>
+      </div>
+    </div>
+    <div class="row" style="margin-top:.75rem;">
+      <div>
+        <label>Transferir rol de admin a</label>
+        <input id="inpNuevoAdmin" placeholder="0x..." />
+      </div>
+      <div style="max-width:200px;">
+        <button id="btnTransferirAdmin" class="danger" style="width:100%;">Transferir admin</button>
+      </div>
+    </div>
+    <p class="mini">⚠️ Transferir el admin entrega el control total del contrato y no se puede deshacer.</p>
+    <div id="logAdmin" class="log"></div>
+  </div>
+</div>
+
+<script>
+const ABI = [
+  "function registrar(bytes32 hashDoc, address titular, uint8 tipo)",
+  "function revocarDocumento(bytes32 hashDoc)",
+  "function autorizarEmisor(address emisor)",
+  "function revocarEmisor(address emisor)",
+  "function transferirAdmin(address nuevoAdmin)",
+  "function verificar(bytes32 hashDoc) returns (bool valido, tuple(address emisor, address titular, uint64 timestamp, uint8 tipo, bool existe, bool revocado) doc)",
+  "function consultar(bytes32 hashDoc) view returns (bool valido, tuple(address emisor, address titular, uint64 timestamp, uint8 tipo, bool existe, bool revocado) doc)",
+  "function emisoresAutorizados(address) view returns (bool)",
+  "function admin() view returns (address)",
+];
+const TIPOS = ["Genérico", "Título", "Certificado", "Contrato", "Identidad"];
+const DEFAULT_CONTRACT = "0xd4C906016999E7DcD5E2708C011a975E5557a37c";
+
+let provider, signer, miDireccion, hashActual = null;
+let soyAdmin = false, soyEmisor = false;
+
+const $ = (id) => document.getElementById(id);
+$("contractAddr").value = localStorage.getItem("contractAddr") || DEFAULT_CONTRACT;
+$("contractAddr").addEventListener("change", () => {
+  localStorage.setItem("contractAddr", $("contractAddr").value.trim());
+  if (signer) actualizarRol();
+});
+
+function contrato() {
+  const addr = $("contractAddr").value.trim();
+  if (!ethers.isAddress(addr)) throw new Error("Dirección de contrato inválida");
+  return new ethers.Contract(addr, ABI, signer ?? provider);
+}
+
+function log(elId, msg, esLink = null) {
+  const el = $(elId);
+  el.classList.add("show");
+  const linea = document.createElement("div");
+  if (esLink) {
+    linea.innerHTML = `${msg} <a href="${esLink}" target="_blank">ver en Etherscan ↗</a>`;
+  } else {
+    linea.textContent = msg;
+  }
+  el.appendChild(linea);
+  el.scrollTop = el.scrollHeight;
+}
+
+function linkTx(hash) { return `https://sepolia.etherscan.io/tx/${hash}`; }
+function fmtFecha(ts) { return new Date(Number(ts) * 1000).toLocaleString("es-CL"); }
+
+// ---------- Conexión ----------
+$("btnConectar").addEventListener("click", async () => {
+  if (!window.ethereum) { alert("Instala MetaMask para usar esta aplicación."); return; }
+  provider = new ethers.BrowserProvider(window.ethereum);
+  await provider.send("eth_requestAccounts", []);
+
+  // Cambiar a Sepolia si hace falta (chainId 11155111 = 0xaa36a7)
+  const red = await provider.getNetwork();
+  if (red.chainId !== 11155111n) {
+    try {
+      await window.ethereum.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: "0xaa36a7" }],
+      });
+      provider = new ethers.BrowserProvider(window.ethereum);
+    } catch {
+      alert("Cambia manualmente la red de MetaMask a Sepolia.");
+      return;
+    }
+  }
+
+  signer = await provider.getSigner();
+  miDireccion = await signer.getAddress();
+  $("walletAddr").textContent = miDireccion;
+  $("btnConectar").textContent = "Conectado ✓";
+  await actualizarRol();
+});
+
+async function actualizarRol() {
+  try {
+    const c = contrato();
+    const adminAddr = await c.admin();
+    soyAdmin = adminAddr.toLowerCase() === miDireccion.toLowerCase();
+    soyEmisor = await c.emisoresAutorizados(miDireccion);
+    const rol = soyAdmin ? ["admin", "ADMIN"] : soyEmisor ? ["emisor", "EMISOR"] : ["verificador", "VERIFICADOR"];
+    $("walletRole").innerHTML = `<span class="badge ${rol[0]}">${rol[1]}</span>`;
+    $("panelAdmin").classList.toggle("hidden", !soyAdmin);
+    $("registroForm").classList.toggle("hidden", !soyEmisor);
+    $("btnRevocarDoc").classList.toggle("hidden", !(soyAdmin || soyEmisor));
+  } catch (e) {
+    $("walletRole").innerHTML = `<span class="badge verificador">SIN CONTRATO</span>`;
+    console.error(e);
+  }
+}
+
+// ---------- Archivo y hash ----------
+const dz = $("dropzone");
+dz.addEventListener("click", () => $("fileInput").click());
+dz.addEventListener("dragover", (e) => { e.preventDefault(); dz.classList.add("over"); });
+dz.addEventListener("dragleave", () => dz.classList.remove("over"));
+dz.addEventListener("drop", (e) => {
+  e.preventDefault(); dz.classList.remove("over");
+  if (e.dataTransfer.files.length) procesarArchivo(e.dataTransfer.files[0]);
+});
+$("fileInput").addEventListener("change", (e) => {
+  if (e.target.files.length) procesarArchivo(e.target.files[0]);
+});
+
+async function procesarArchivo(file) {
+  const buffer = await file.arrayBuffer();
+  hashActual = ethers.keccak256(new Uint8Array(buffer));
+  const kb = (file.size / 1024).toFixed(1);
+  $("fileInfo").textContent = `📎 ${file.name} (${kb} KB, ${file.type || "tipo desconocido"})`;
+  $("hashBox").textContent = `keccak256: ${hashActual}`;
+  $("hashBox").classList.remove("hidden");
+  $("panelAcciones").style.display = "block";
+  $("resultado").className = "result";
+}
+
+// ---------- Resultado ----------
+function mostrarResultado(valido, doc) {
+  const r = $("resultado");
+  if (valido) {
+    r.className = "result show ok";
+    r.innerHTML = `<h3>✅ DOCUMENTO AUTÉNTICO</h3>
+      <dl>
+        <dt>Emisor</dt><dd>${doc.emisor}</dd>
+        <dt>Titular</dt><dd>${doc.titular}</dd>
+        <dt>Tipo</dt><dd>${TIPOS[Number(doc.tipo)] ?? doc.tipo}</dd>
+        <dt>Registrado</dt><dd>${fmtFecha(doc.timestamp)}</dd>
+      </dl>`;
+  } else if (doc.existe && doc.revocado) {
+    r.className = "result show warn";
+    r.innerHTML = `<h3>⚠️ DOCUMENTO REVOCADO</h3>
+      <p>Fue registrado pero el emisor o el admin lo invalidó.</p>
+      <dl style="margin-top:.5rem;">
+        <dt>Emisor</dt><dd>${doc.emisor}</dd>
+        <dt>Titular</dt><dd>${doc.titular}</dd>
+        <dt>Registrado</dt><dd>${fmtFecha(doc.timestamp)}</dd>
+      </dl>`;
+  } else {
+    r.className = "result show bad";
+    r.innerHTML = `<h3>❌ DOCUMENTO NO REGISTRADO</h3>
+      <p>El hash no existe en el contrato. El documento no fue emitido por este sistema o fue alterado (basta cambiar un byte para que el hash sea distinto).</p>`;
+  }
+}
+
+function requiereWallet() {
+  if (!signer) { alert("Conecta MetaMask primero."); return false; }
+  if (!hashActual) { alert("Selecciona un archivo primero."); return false; }
+  return true;
+}
+
+// ---------- Acciones documento ----------
+$("btnConsultar").addEventListener("click", async () => {
+  if (!hashActual) { alert("Selecciona un archivo primero."); return; }
+  try {
+    if (!provider) provider = new ethers.BrowserProvider(window.ethereum);
+    const [valido, doc] = await contrato().consultar(hashActual);
+    mostrarResultado(valido, doc);
+    log("log", `consultar() → ${valido ? "válido" : "no válido"} (lectura gratuita)`);
+  } catch (e) { log("log", `ERROR: ${e.shortMessage ?? e.message}`); }
+});
+
+$("btnVerificar").addEventListener("click", async () => {
+  if (!requiereWallet()) return;
+  try {
+    log("log", "Enviando verificar() — esto crea una transacción...");
+    const tx = await contrato().verificar(hashActual);
+    log("log", `Tx enviada:`, linkTx(tx.hash));
+    await tx.wait();
+    const [valido, doc] = await contrato().consultar(hashActual);
+    mostrarResultado(valido, doc);
+    log("log", "Verificación registrada on-chain.");
+  } catch (e) { log("log", `ERROR: ${e.shortMessage ?? e.message}`); }
+});
+
+$("btnRegistrar").addEventListener("click", async () => {
+  if (!requiereWallet()) return;
+  const titular = $("inpTitular").value.trim();
+  if (!ethers.isAddress(titular)) { alert("Dirección de titular inválida."); return; }
+  try {
+    log("log", "Enviando registrar()...");
+    const tx = await contrato().registrar(hashActual, titular, Number($("selTipo").value));
+    log("log", `Tx enviada:`, linkTx(tx.hash));
+    const receipt = await tx.wait();
+    log("log", `Confirmada en bloque ${receipt.blockNumber} (gas: ${receipt.gasUsed})`);
+    const [valido, doc] = await contrato().consultar(hashActual);
+    mostrarResultado(valido, doc);
+  } catch (e) { log("log", `ERROR: ${e.shortMessage ?? e.message}`); }
+});
+
+$("btnRevocarDoc").addEventListener("click", async () => {
+  if (!requiereWallet()) return;
+  if (!confirm("¿Revocar este documento? El registro histórico se conserva pero dejará de ser válido.")) return;
+  try {
+    log("log", "Enviando revocarDocumento()...");
+    const tx = await contrato().revocarDocumento(hashActual);
+    log("log", `Tx enviada:`, linkTx(tx.hash));
+    await tx.wait();
+    const [valido, doc] = await contrato().consultar(hashActual);
+    mostrarResultado(valido, doc);
+    log("log", "Documento revocado.");
+  } catch (e) { log("log", `ERROR: ${e.shortMessage ?? e.message}`); }
+});
+
+// ---------- Panel admin ----------
+async function accionAdmin(fn, msg) {
+  if (!signer) { alert("Conecta MetaMask primero."); return; }
+  try {
+    log("logAdmin", msg);
+    const tx = await fn();
+    log("logAdmin", `Tx enviada:`, linkTx(tx.hash));
+    const receipt = await tx.wait();
+    log("logAdmin", `Confirmada en bloque ${receipt.blockNumber}`);
+    await actualizarRol();
+  } catch (e) { log("logAdmin", `ERROR: ${e.shortMessage ?? e.message}`); }
+}
+
+$("btnAutorizar").addEventListener("click", () => {
+  const addr = $("inpEmisor").value.trim();
+  if (!ethers.isAddress(addr)) { alert("Dirección inválida."); return; }
+  accionAdmin(() => contrato().autorizarEmisor(addr), `Autorizando emisor ${addr}...`);
+});
+
+$("btnRevocarEmisor").addEventListener("click", () => {
+  const addr = $("inpEmisor").value.trim();
+  if (!ethers.isAddress(addr)) { alert("Dirección inválida."); return; }
+  accionAdmin(() => contrato().revocarEmisor(addr), `Revocando emisor ${addr}...`);
+});
+
+$("btnCheckEmisor").addEventListener("click", async () => {
+  const addr = $("inpEmisor").value.trim();
+  if (!ethers.isAddress(addr)) { alert("Dirección inválida."); return; }
+  try {
+    const ok = await contrato().emisoresAutorizados(addr);
+    log("logAdmin", `${addr} ${ok ? "SÍ es" : "NO es"} emisor autorizado.`);
+  } catch (e) { log("logAdmin", `ERROR: ${e.shortMessage ?? e.message}`); }
+});
+
+$("btnTransferirAdmin").addEventListener("click", () => {
+  const addr = $("inpNuevoAdmin").value.trim();
+  if (!ethers.isAddress(addr)) { alert("Dirección inválida."); return; }
+  if (!confirm(`¿Transferir el rol de ADMIN a ${addr}?\n\nEsta acción NO se puede deshacer. Perderás el control del contrato.`)) return;
+  accionAdmin(() => contrato().transferirAdmin(addr), `Transfiriendo admin a ${addr}...`);
+});
+</script>
+</body>
+</html>

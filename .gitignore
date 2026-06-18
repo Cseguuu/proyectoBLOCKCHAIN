@@ -19,5 +19,13 @@ docs/
 .env.*
 !.env.example
 
-# Node.js (demo CLI)
+# Node.js (demo CLI + frontend)
 node_modules/
+
+# Frontend (Vite)
+frontend/dist/
+frontend/.vercel
+frontend/.netlify
+
+# OS
+.DS_Store

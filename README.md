@@ -10,7 +10,7 @@ del archivo; el documento real nunca sale del control de su dueño.
 ## Contrato desplegado
 
 - **Red:** Ethereum Sepolia (testnet)
-- **Dirección:** [`0xd4C906016999E7DcD5E2708C011a975E5557a37c`](https://sepolia.etherscan.io/address/0xd4C906016999E7DcD5E2708C011a975E5557a37c)
+- **Dirección:** [`0x237b7111Be8436Ba3c74826C3C2DA6B3b2309cE1`](https://sepolia.etherscan.io/address/0x237b7111Be8436Ba3c74826C3C2DA6B3b2309cE1)
 
 ## ¿Cómo funciona?
 
@@ -38,6 +38,7 @@ src/RegistroDocumentos.sol      Smart contract principal
 test/RegistroDocumentos.t.sol   Tests con Forge (unitarios + fuzz)
 script/Deploy.s.sol             Script de despliegue a Sepolia
 demo/                           CLI en Node.js + ethers.js para la demo
+frontend/                       dApp web (React + Vite + Tailwind + ethers v6)
 INFORME_BASE.md                 Base del informe escrito
 ```
 
@@ -78,6 +79,18 @@ cp .env.example .env   # editar con tus valores
 node demo.js info
 node demo.js registrar documento-ejemplo.txt 0xTitular Titulo
 node demo.js consultar documento-ejemplo.txt
+```
+
+### Interfaz web (frontend)
+
+dApp con dashboard por rol (Admin / Emisor / Verificador), historial de eventos on-chain y
+conexión por MetaMask. Ver [`frontend/README.md`](frontend/README.md).
+
+```bash
+cd frontend
+npm install
+cp .env.example .env   # editar VITE_CONTRACT_ADDRESS con la dirección de la v2
+npm run dev            # http://localhost:5173
 ```
 
 ## Decisiones de diseño

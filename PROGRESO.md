@@ -10,11 +10,11 @@ Curso: TICS0870 | Grupo 8: Los Callampines
 |---|---|
 | Smart contract `RegistroDocumentos.sol` (v2: revocación + transferencia de admin) | ✅ Completo |
 | Tests Forge (21 tests: unitarios + fuzz) | ✅ Pasando |
-| Deploy en Sepolia | ⚠️ Desplegada la v1 — falta redeploy de la v2 |
+| Deploy v2 en Sepolia | ✅ `0x237b7111Be8436Ba3c74826C3C2DA6B3b2309cE1` |
 | Demo CLI (Node.js + ethers.js) | ✅ Actualizada para v2 |
-| Frontend web (`frontend/index.html`, MetaMask + ethers.js) | ✅ Listo (requiere contrato v2) |
+| Frontend web (React + Vite + Tailwind, dashboard por rol) | ✅ Listo (apunta a v2) |
 | README del repositorio | ✅ Listo |
-| Informe base (`INFORME_BASE.md`) | ✅ Borrador listo |
+| Informe base (`INFORME_BASE.md`) | ⚠️ Pendiente sincronizar con v2 |
 | Verificación del contrato en Etherscan | ⬜ Pendiente |
 | Informe formal (.docx) | ⬜ Pendiente |
 | Video demo | ⬜ Pendiente |
@@ -24,11 +24,10 @@ Curso: TICS0870 | Grupo 8: Los Callampines
 ## Contrato desplegado
 
 - **Red:** Ethereum Sepolia
-- **Dirección:** `0xd4C906016999E7DcD5E2708C011a975E5557a37c`
-- **Tx de deploy:** `0xc0b6667cac9a74d55bc084df2ca8eb549753891f653924fc523f4cc3d2e98b83`
-- **Bloque:** 11018690
-- **Gas pagado:** 0.000578 ETH
-- **Etherscan:** https://sepolia.etherscan.io/address/0xd4C906016999E7DcD5E2708C011a975E5557a37c
+- **Dirección v2:** `0x237b7111Be8436Ba3c74826C3C2DA6B3b2309cE1`
+- **Bloque v2:** 11089009
+- **Etherscan v2:** https://sepolia.etherscan.io/address/0x237b7111Be8436Ba3c74826C3C2DA6B3b2309cE1
+- ~~Dirección v1 (obsoleta): `0xd4C906016999E7DcD5E2708C011a975E5557a37c`~~
 
 ---
 
@@ -123,10 +122,10 @@ git checkout certificado.txt 2>/dev/null || true
 forge test -vv
 
 # Ver contrato en Sepolia
-cast call 0xd4C906016999E7DcD5E2708C011a975E5557a37c "admin()(address)" --rpc-url $SEPOLIA_RPC_URL
+cast call 0x237b7111Be8436Ba3c74826C3C2DA6B3b2309cE1 "admin()(address)" --rpc-url $SEPOLIA_RPC_URL
 
 # Verificar si una dirección es emisor
-cast call 0xd4C906016999E7DcD5E2708C011a975E5557a37c \
+cast call 0x237b7111Be8436Ba3c74826C3C2DA6B3b2309cE1 \
   "emisoresAutorizados(address)(bool)" \
   0x193Eb8dE1535983661fa06dEa2d30aA212fF4c26 \
   --rpc-url $SEPOLIA_RPC_URL
