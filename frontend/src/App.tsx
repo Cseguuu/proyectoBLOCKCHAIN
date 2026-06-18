@@ -9,55 +9,25 @@ import { AdminView } from "./views/AdminView";
 
 type Tab = "verificar" | "emitir" | "admin";
 
-interface TabDef {
-  id: Tab;
-  icon: string;
-  label: string;
-  desc: string;
-  requiere: string | null;
-}
-
-const TABS: TabDef[] = [
-  {
-    id: "verificar",
-    icon: "🔍",
-    label: "Verificar",
-    desc: "Comprueba si un documento fue registrado y sigue vigente",
-    requiere: null,
-  },
-  {
-    id: "emitir",
-    icon: "🖋️",
-    label: "Emitir",
-    desc: "Registra o revoca documentos como emisor autorizado",
-    requiere: "emisor",
-  },
-  {
-    id: "admin",
-    icon: "⚙️",
-    label: "Admin",
-    desc: "Gestiona emisores y transfiere el control del contrato",
-    requiere: "admin",
-  },
-];
-
 export function App() {
   const { rol, address } = useWallet();
   const [tab, setTab] = useState<Tab>("verificar");
-  const [lockedHint, setLockedHint] = useState<Tab | null>(null);
 
   const puedeEmitir = rol === "emisor" || rol === "admin";
   const puedeAdmin = rol === "admin";
 
-  function tabHabilitada(t: TabDef) {
-    if (t.id === "verificar") return true;
-    if (t.id === "emitir") return puedeEmitir;
-    if (t.id === "admin") return puedeAdmin;
-    return false;
-  }
+  // Solo se muestran las pestañas que el rol actual puede usar (progressive disclosure).
+  const tabs: { id: Tab; icon: string; label: string }[] = [
+    { id: "verificar", icon: "🔍", label: "Verificar" },
+  ];
+  if (puedeEmitir) tabs.push({ id: "emitir", icon: "🖋️", label: "Emitir" });
+  if (puedeAdmin) tabs.push({ id: "admin", icon: "⚙️", label: "Admin" });
 
-  const tabActiva: Tab =
-    (tab === "emitir" && !puedeEmitir) || (tab === "admin" && !puedeAdmin) ? "verificar" : tab;
+  // Si el rol pierde acceso a la pestaña activa (ej: desconecta wallet), volver a verificar.
+  const tabActiva: Tab = tabs.some((t) => t.id === tab) ? tab : "verificar";
+
+  // La wallet conectada no tiene permisos especiales (solo puede verificar).
+  const walletSinPermisos = !!address && rol === "verificador";
 
   return (
     <div className="min-h-screen bg-bg">
@@ -66,9 +36,7 @@ export function App() {
         <header className="mb-8">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">
-                🔗 Registro de Documentos
-              </h1>
+              <h1 className="text-3xl font-bold tracking-tight">🔗 Registro de Documentos</h1>
               <p className="mt-1.5 text-sm text-muted">
                 Sistema de certificación sobre{" "}
                 <span className="text-text font-medium">Ethereum Sepolia</span> — el archivo
@@ -86,84 +54,73 @@ export function App() {
         <WalletBar />
         <NetworkGuard />
 
-        {/* Onboarding: roles explanation when not connected */}
+        {/* Onboarding: explicación de roles solo cuando NO hay wallet conectada */}
         {!address && (
-          <div className="mb-6 grid gap-3 sm:grid-cols-3">
-            <RoleCard
-              icon="🔍"
-              title="Verificador"
-              badge="Público"
-              badgeCls="bg-[#45525f]"
-              desc="Cualquier persona puede comprobar si un documento es auténtico, sin wallet ni costo."
-            />
-            <RoleCard
-              icon="🖋️"
-              title="Emisor"
-              badge="Requiere wallet"
-              badgeCls="bg-[#1f6e42]"
-              desc="Organizaciones autorizadas por el admin pueden registrar y revocar documentos."
-            />
-            <RoleCard
-              icon="⚙️"
-              title="Admin"
-              badge="Solo deployer"
-              badgeCls="bg-[#5b3fb9]"
-              desc="El deployer del contrato puede autorizar emisores y transferir el control."
-            />
+          <div className="mb-6">
+            <p className="mb-3 text-xs font-medium uppercase tracking-wider text-muted">
+              ¿Quién puede hacer qué?
+            </p>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <RoleCard
+                icon="🔍"
+                title="Verificador"
+                badge="Tú, ahora"
+                badgeCls="bg-[#45525f]"
+                desc="Cualquier persona comprueba si un documento es auténtico. Gratis y sin wallet — es lo que puedes hacer en esta pantalla."
+              />
+              <RoleCard
+                icon="🖋️"
+                title="Emisor"
+                badge="Conecta wallet"
+                badgeCls="bg-[#1f6e42]"
+                desc="Organizaciones autorizadas por el admin registran y revocan documentos. Las funciones aparecen al conectar una wallet emisora."
+              />
+              <RoleCard
+                icon="⚙️"
+                title="Admin"
+                badge="Conecta wallet"
+                badgeCls="bg-[#5b3fb9]"
+                desc="El dueño del contrato autoriza emisores y traspasa el control. No emite documentos: gestiona quién puede hacerlo."
+              />
+            </div>
           </div>
         )}
 
-        {/* Tab navigation */}
-        <nav className="mb-5 flex gap-1.5" aria-label="Secciones">
-          {TABS.map((t) => {
-            const activa = tabActiva === t.id;
-            const habilitada = tabHabilitada(t);
-            return (
-              <div key={t.id} className="relative">
+        {/* Aviso: wallet conectada sin permisos especiales */}
+        {walletSinPermisos && (
+          <div className="mb-5 rounded-lg border border-border bg-panel/60 px-4 py-3 text-sm text-muted">
+            ℹ️ Esta wallet puede <strong className="text-text">verificar documentos</strong>, pero
+            no es emisor ni admin. Para emitir documentos necesitas que el admin del contrato
+            autorice tu dirección.
+          </div>
+        )}
+
+        {/* Navegación por pestañas — solo aparece si hay más de una disponible */}
+        {tabs.length > 1 && (
+          <nav className="mb-5 flex gap-1.5" aria-label="Secciones">
+            {tabs.map((t) => {
+              const activa = tabActiva === t.id;
+              return (
                 <button
+                  key={t.id}
                   type="button"
-                  onClick={() => {
-                    if (habilitada) {
-                      setTab(t.id);
-                      setLockedHint(null);
-                    } else {
-                      setLockedHint(lockedHint === t.id ? null : t.id);
-                    }
-                  }}
+                  onClick={() => setTab(t.id)}
                   aria-current={activa}
                   className={`flex items-center gap-1.5 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all ${
                     activa
                       ? "bg-accent text-white shadow-sm"
-                      : habilitada
-                        ? "border border-border text-muted hover:border-accent/50 hover:text-text"
-                        : "border border-border/50 text-muted/50 cursor-pointer"
+                      : "border border-border text-muted hover:border-accent/50 hover:text-text"
                   }`}
                 >
                   <span>{t.icon}</span>
                   <span>{t.label}</span>
-                  {!habilitada && <span className="text-xs opacity-60">🔒</span>}
                 </button>
+              );
+            })}
+          </nav>
+        )}
 
-                {/* Tooltip for locked tabs */}
-                {lockedHint === t.id && !habilitada && (
-                  <div className="absolute left-0 top-full z-10 mt-1.5 w-56 rounded-lg border border-border bg-panel p-3 text-xs shadow-lg">
-                    <p className="font-semibold text-text">Acceso restringido</p>
-                    <p className="mt-1 text-muted">{t.desc}</p>
-                    <p className="mt-2 text-warn">
-                      {!address
-                        ? "Conecta MetaMask para que el sistema detecte tu rol."
-                        : t.id === "emitir"
-                          ? "Tu wallet no tiene el rol de emisor. Pídele al admin que te autorice."
-                          : "Solo el deployer del contrato tiene acceso."}
-                    </p>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </nav>
-
-        {/* Main content */}
+        {/* Contenido principal */}
         <main className="space-y-5">
           {tabActiva === "verificar" && <VerifierView />}
           {tabActiva === "emitir" && puedeEmitir && <IssuerView />}
