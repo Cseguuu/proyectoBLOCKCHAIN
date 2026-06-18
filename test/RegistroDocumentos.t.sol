@@ -72,37 +72,37 @@ contract RegistroDocumentosTest is Test {
             hashDoc,
             emisor,
             titular,
-            RegistroDocumentos.TipoDocumento.Titulo,
+            RegistroDocumentos.TipoDocumento.DiplomaTitulo,
             uint64(block.timestamp)
         );
 
         vm.prank(emisor);
-        registro.registrar(hashDoc, titular, RegistroDocumentos.TipoDocumento.Titulo);
+        registro.registrar(hashDoc, titular, RegistroDocumentos.TipoDocumento.DiplomaTitulo);
 
         (bool valido, RegistroDocumentos.Documento memory doc) = registro.consultar(hashDoc);
         assertTrue(valido);
         assertEq(doc.emisor, emisor);
         assertEq(doc.titular, titular);
-        assertEq(uint8(doc.tipo), uint8(RegistroDocumentos.TipoDocumento.Titulo));
+        assertEq(uint8(doc.tipo), uint8(RegistroDocumentos.TipoDocumento.DiplomaTitulo));
     }
 
     function test_NoEmisorNoPuedeRegistrar() public {
         vm.prank(extranio);
         vm.expectRevert(RegistroDocumentos.NoAutorizado.selector);
-        registro.registrar(hashDoc, titular, RegistroDocumentos.TipoDocumento.Generico);
+        registro.registrar(hashDoc, titular, RegistroDocumentos.TipoDocumento.Otro);
     }
 
     function test_NoSePuedeRegistrarHashCero() public {
         vm.prank(emisor);
         vm.expectRevert(RegistroDocumentos.HashInvalido.selector);
-        registro.registrar(bytes32(0), titular, RegistroDocumentos.TipoDocumento.Generico);
+        registro.registrar(bytes32(0), titular, RegistroDocumentos.TipoDocumento.Otro);
     }
 
     function test_NoSePuedeRegistrarDosVecesElMismoHash() public {
         vm.startPrank(emisor);
-        registro.registrar(hashDoc, titular, RegistroDocumentos.TipoDocumento.Generico);
+        registro.registrar(hashDoc, titular, RegistroDocumentos.TipoDocumento.Otro);
         vm.expectRevert(RegistroDocumentos.DocumentoYaExiste.selector);
-        registro.registrar(hashDoc, titular, RegistroDocumentos.TipoDocumento.Generico);
+        registro.registrar(hashDoc, titular, RegistroDocumentos.TipoDocumento.Otro);
         vm.stopPrank();
     }
 
@@ -110,7 +110,7 @@ contract RegistroDocumentosTest is Test {
 
     function test_VerificarDocumentoValido() public {
         vm.prank(emisor);
-        registro.registrar(hashDoc, titular, RegistroDocumentos.TipoDocumento.Certificado);
+        registro.registrar(hashDoc, titular, RegistroDocumentos.TipoDocumento.CertificadoAlumnoRegular);
 
         vm.expectEmit(true, true, false, true);
         emit DocumentoVerificado(hashDoc, extranio, true);
@@ -131,7 +131,7 @@ contract RegistroDocumentosTest is Test {
 
     function test_EmisorPuedeRevocarSuDocumento() public {
         vm.prank(emisor);
-        registro.registrar(hashDoc, titular, RegistroDocumentos.TipoDocumento.Titulo);
+        registro.registrar(hashDoc, titular, RegistroDocumentos.TipoDocumento.DiplomaTitulo);
 
         vm.expectEmit(true, true, false, false);
         emit DocumentoRevocado(hashDoc, emisor);
@@ -147,7 +147,7 @@ contract RegistroDocumentosTest is Test {
 
     function test_AdminPuedeRevocarCualquierDocumento() public {
         vm.prank(emisor);
-        registro.registrar(hashDoc, titular, RegistroDocumentos.TipoDocumento.Contrato);
+        registro.registrar(hashDoc, titular, RegistroDocumentos.TipoDocumento.CertificadoEgreso);
 
         vm.prank(admin);
         registro.revocarDocumento(hashDoc);
@@ -158,7 +158,7 @@ contract RegistroDocumentosTest is Test {
 
     function test_ExtranioNoPuedeRevocarDocumento() public {
         vm.prank(emisor);
-        registro.registrar(hashDoc, titular, RegistroDocumentos.TipoDocumento.Generico);
+        registro.registrar(hashDoc, titular, RegistroDocumentos.TipoDocumento.Otro);
 
         vm.prank(extranio);
         vm.expectRevert(RegistroDocumentos.NoAutorizado.selector);
@@ -173,7 +173,7 @@ contract RegistroDocumentosTest is Test {
 
     function test_NoSePuedeRevocarDosVeces() public {
         vm.startPrank(emisor);
-        registro.registrar(hashDoc, titular, RegistroDocumentos.TipoDocumento.Generico);
+        registro.registrar(hashDoc, titular, RegistroDocumentos.TipoDocumento.Otro);
         registro.revocarDocumento(hashDoc);
         vm.expectRevert(RegistroDocumentos.DocumentoYaRevocado.selector);
         registro.revocarDocumento(hashDoc);
@@ -182,7 +182,7 @@ contract RegistroDocumentosTest is Test {
 
     function test_VerificarDocumentoRevocadoDevuelveInvalido() public {
         vm.startPrank(emisor);
-        registro.registrar(hashDoc, titular, RegistroDocumentos.TipoDocumento.Titulo);
+        registro.registrar(hashDoc, titular, RegistroDocumentos.TipoDocumento.DiplomaTitulo);
         registro.revocarDocumento(hashDoc);
         vm.stopPrank();
 
@@ -256,7 +256,7 @@ contract RegistroDocumentosTest is Test {
         vm.assume(h != bytes32(0));
 
         vm.startPrank(emisor);
-        registro.registrar(h, titular, RegistroDocumentos.TipoDocumento.Generico);
+        registro.registrar(h, titular, RegistroDocumentos.TipoDocumento.Otro);
         registro.revocarDocumento(h);
         vm.stopPrank();
 

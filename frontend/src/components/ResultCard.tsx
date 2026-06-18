@@ -31,12 +31,12 @@ export function ResultCard({ resultado }: { resultado: Resultado | null }) {
   if (valido) {
     return (
       <div className="mt-4 rounded-lg border border-ok bg-ok/10 p-4">
-        <h3 className="mb-2 text-base font-semibold">✅ DOCUMENTO AUTÉNTICO</h3>
+        <h3 className="mb-2 text-base font-semibold">✅ CERTIFICADO AUTÉNTICO</h3>
         <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
-          <Dato k="Emisor" v={truncar(doc.emisor)} link={linkAddress(doc.emisor)} />
-          <Dato k="Titular" v={truncar(doc.titular)} link={linkAddress(doc.titular)} />
+          <Dato k="Emisor (UAI)" v={truncar(doc.emisor)} link={linkAddress(doc.emisor)} />
+          <Dato k="Alumno" v={truncar(doc.titular)} link={linkAddress(doc.titular)} />
           <Dato k="Tipo" v={nombreTipo(doc.tipo)} />
-          <Dato k="Registrado" v={fmtFecha(doc.timestamp)} />
+          <Dato k="Emitido" v={fmtFecha(doc.timestamp)} />
         </dl>
       </div>
     );
@@ -45,12 +45,15 @@ export function ResultCard({ resultado }: { resultado: Resultado | null }) {
   if (doc.existe && doc.revocado) {
     return (
       <div className="mt-4 rounded-lg border border-warn bg-warn/10 p-4">
-        <h3 className="mb-2 text-base font-semibold">⚠️ DOCUMENTO REVOCADO</h3>
-        <p className="text-sm">Fue registrado pero el emisor o el admin lo invalidó.</p>
+        <h3 className="mb-2 text-base font-semibold">⚠️ CERTIFICADO REVOCADO</h3>
+        <p className="text-sm">
+          Fue emitido por la UAI pero luego se invalidó (anulado o reemplazado). No debe
+          considerarse válido.
+        </p>
         <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
-          <Dato k="Emisor" v={truncar(doc.emisor)} link={linkAddress(doc.emisor)} />
-          <Dato k="Titular" v={truncar(doc.titular)} link={linkAddress(doc.titular)} />
-          <Dato k="Registrado" v={fmtFecha(doc.timestamp)} />
+          <Dato k="Emisor (UAI)" v={truncar(doc.emisor)} link={linkAddress(doc.emisor)} />
+          <Dato k="Alumno" v={truncar(doc.titular)} link={linkAddress(doc.titular)} />
+          <Dato k="Emitido" v={fmtFecha(doc.timestamp)} />
         </dl>
       </div>
     );
@@ -58,10 +61,11 @@ export function ResultCard({ resultado }: { resultado: Resultado | null }) {
 
   return (
     <div className="mt-4 rounded-lg border border-bad bg-bad/10 p-4">
-      <h3 className="mb-2 text-base font-semibold">❌ DOCUMENTO NO REGISTRADO</h3>
+      <h3 className="mb-2 text-base font-semibold">❌ CERTIFICADO NO REGISTRADO</h3>
       <p className="text-sm">
-        El hash no existe en el contrato. El documento no fue emitido por este sistema o fue
-        alterado: basta cambiar un solo byte para que el hash sea completamente distinto.
+        Esta huella no existe en el registro. El certificado no fue emitido por este sistema o
+        fue <strong>alterado</strong>: basta cambiar un solo byte (una nota, una fecha, un
+        nombre) para que el hash sea completamente distinto.
       </p>
     </div>
   );
