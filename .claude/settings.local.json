@@ -6,7 +6,10 @@
       "Bash(forge clean *)",
       "Bash(git stash *)",
       "Bash(git checkout *)",
-      "Bash(git -c http.sslBackend=schannel pull origin master)"
+      "Bash(git -c http.sslBackend=schannel pull origin master)",
+      "Bash(forge test *)",
+      "PowerShell($f = \\(Get-Command forge -ErrorAction SilentlyContinue\\); if \\($f\\) { \"forge: $\\($f.Source\\)\" } else { \"forge NOT in PATH\" }; Test-Path \"frontend/node_modules\"; $n = \\(Get-Command node -ErrorAction SilentlyContinue\\); if \\($n\\) { \"node: \" + \\(node --version\\) } else { \"node NOT found\" })",
+      "PowerShell(wsl -l -v)"
     ]
   }
 }

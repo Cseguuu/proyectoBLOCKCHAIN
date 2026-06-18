@@ -5,6 +5,7 @@ import { useToast } from "../components/Toaster";
 import { FileDropzone } from "../components/FileDropzone";
 import { TxButton } from "../components/TxButton";
 import { ResultCard, type Resultado } from "../components/ResultCard";
+import { Icon } from "../components/Icon";
 import { aDocumento, TIPOS } from "../lib/contract";
 import { linkTx } from "../lib/format";
 
@@ -48,47 +49,51 @@ export function IssuerView() {
     await refrescarResultado();
   }
 
+  const paso = "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-accent font-mono text-xs font-bold text-accent";
+
   return (
-    <section className="rounded-xl border border-border bg-panel p-6">
-      <div className="mb-5">
-        <h2 className="text-lg font-semibold">Emitir certificado · Registro Académico UAI</h2>
-        <p className="mt-1 text-sm text-muted">
-          Como oficina autorizada puedes registrar la huella digital de un certificado en la
-          blockchain, asociándolo al alumno titular. También puedes revocar certificados que
-          hayas emitido (por ejemplo, si se anula o se reemplaza por una versión corregida).
-        </p>
+    <section className="sheet p-6 sm:p-7">
+      <div className="mb-1 flex items-center gap-2">
+        <Icon name="quill" size={22} className="text-accent" />
+        <h2 className="font-display text-2xl font-semibold">Emitir certificado</h2>
+        <span className="ml-1 text-sm text-muted">· Registro Académico UAI</span>
       </div>
+      <div className="rule-double mb-4" />
+      <p className="mb-5 text-sm leading-relaxed text-muted">
+        Como oficina autorizada puedes registrar la huella digital de un certificado en la
+        blockchain, asociándolo al alumno titular. También puedes revocar certificados que hayas
+        emitido (por ejemplo, si se anula o se reemplaza por una versión corregida).
+      </p>
 
       {/* Action toggle */}
-      <div className="mb-5 flex gap-1 rounded-lg border border-border bg-bg p-1 w-fit">
+      <div className="mb-6 flex w-fit gap-1 rounded-[3px] border border-line bg-inset p-1">
         <button
           type="button"
           onClick={() => setAccion("registrar")}
-          className={`rounded-md px-5 py-2 text-sm font-semibold transition-all ${
-            accion === "registrar"
-              ? "bg-accent text-white shadow-sm"
-              : "text-muted hover:text-text"
+          className={`inline-flex items-center gap-1.5 rounded-[2px] px-5 py-2 text-sm font-semibold transition-colors ${
+            accion === "registrar" ? "bg-accent text-panel" : "text-muted hover:text-text"
           }`}
         >
-          ✅ Registrar
+          <Icon name="check" size={15} />
+          Registrar
         </button>
         <button
           type="button"
           onClick={() => setAccion("revocar")}
-          className={`rounded-md px-5 py-2 text-sm font-semibold transition-all ${
-            accion === "revocar"
-              ? "bg-bad text-white shadow-sm"
-              : "text-muted hover:text-text"
+          className={`inline-flex items-center gap-1.5 rounded-[2px] px-5 py-2 text-sm font-semibold transition-colors ${
+            accion === "revocar" ? "bg-bad text-panel" : "text-muted hover:text-text"
           }`}
         >
-          🚫 Revocar
+          <Icon name="ban" size={15} />
+          Revocar
         </button>
       </div>
 
       {/* File dropzone */}
-      <div className="mb-4">
-        <label className="mb-2 block text-xs font-medium text-muted uppercase tracking-wider">
-          1. Selecciona el documento
+      <div className="mb-5">
+        <label className="mb-2 flex items-center gap-2 label-officio">
+          <span className={paso}>1</span>
+          Selecciona el documento
         </label>
         <FileDropzone
           onSelect={(file, h) => {
@@ -98,9 +103,9 @@ export function IssuerView() {
           }}
         />
         {hash && (
-          <div className="mt-2 rounded-md border border-border bg-bg px-3 py-2">
+          <div className="mt-2 rounded-[3px] border border-border bg-inset px-3 py-2">
             <p className="text-xs text-muted">
-              <span className="font-medium text-text">{fileName}</span> — hash keccak256:
+              <span className="font-medium text-text">{fileName}</span> — huella keccak256:
             </p>
             <p className="mt-0.5 break-all font-mono text-xs text-text/70">{hash}</p>
           </div>
@@ -109,11 +114,12 @@ export function IssuerView() {
 
       {/* Register fields */}
       {accion === "registrar" && (
-        <div className="mb-4">
-          <label className="mb-2 block text-xs font-medium text-muted uppercase tracking-wider">
-            2. Datos del registro
+        <div className="mb-5">
+          <label className="mb-2 flex items-center gap-2 label-officio">
+            <span className={paso}>2</span>
+            Datos del registro
           </label>
-          <div className="grid gap-3 sm:grid-cols-[1fr_200px]">
+          <div className="grid gap-3 sm:grid-cols-[1fr_220px]">
             <div>
               <label htmlFor="titular" className="mb-1 block text-xs text-muted">
                 Alumno titular (dirección Ethereum)
@@ -123,7 +129,7 @@ export function IssuerView() {
                 value={titular}
                 onChange={(e) => setTitular(e.target.value)}
                 placeholder="0x…"
-                className="w-full rounded-md border border-border bg-bg px-3 py-2.5 font-mono text-sm text-text outline-none focus:border-accent transition-colors"
+                className="w-full rounded-[3px] border border-line bg-panel px-3 py-2.5 font-mono text-sm text-text outline-none transition-colors focus:border-accent"
               />
             </div>
             <div>
@@ -134,7 +140,7 @@ export function IssuerView() {
                 id="tipo"
                 value={tipo}
                 onChange={(e) => setTipo(Number(e.target.value))}
-                className="w-full rounded-md border border-border bg-bg px-3 py-2.5 text-sm text-text outline-none focus:border-accent transition-colors"
+                className="w-full rounded-[3px] border border-line bg-panel px-3 py-2.5 text-sm text-text outline-none transition-colors focus:border-accent"
               >
                 {TIPOS.map((t, i) => (
                   <option key={t} value={i}>
@@ -149,27 +155,30 @@ export function IssuerView() {
 
       {/* Revocar explanation */}
       {accion === "revocar" && (
-        <div className="mb-4 rounded-lg border border-bad/30 bg-bad/5 px-4 py-3 text-sm text-muted">
+        <div className="mb-5 rounded-[3px] border border-bad/40 border-l-4 border-l-bad bg-bad/5 px-4 py-3 text-sm text-muted">
           <p>
             <strong className="text-text">Revocar</strong> invalida el documento: pasará a
-            reportarse como <span className="font-semibold text-warn">REVOCADO</span> en
-            cualquier consulta futura. El registro histórico se conserva en la blockchain.
+            reportarse como <span className="font-semibold text-warn">REVOCADO</span> en cualquier
+            consulta futura. El registro histórico se conserva en la blockchain.
           </p>
         </div>
       )}
 
       {/* Action button */}
       <div>
-        <label className="mb-2 block text-xs font-medium text-muted uppercase tracking-wider">
-          {accion === "registrar" ? "3. Confirmar registro" : "2. Confirmar revocación"}
+        <label className="mb-2 flex items-center gap-2 label-officio">
+          <span className={paso}>{accion === "registrar" ? "3" : "2"}</span>
+          {accion === "registrar" ? "Confirmar registro" : "Confirmar revocación"}
         </label>
         {accion === "registrar" ? (
           <TxButton onRun={registrar} disabled={!hash} pendingLabel="Registrando en blockchain…">
-            ✅ Registrar documento
+            <Icon name="check" size={16} />
+            Registrar documento
           </TxButton>
         ) : (
           <TxButton variant="danger" onRun={revocar} disabled={!hash} pendingLabel="Revocando…">
-            🚫 Revocar documento
+            <Icon name="ban" size={16} />
+            Revocar documento
           </TxButton>
         )}
       </div>

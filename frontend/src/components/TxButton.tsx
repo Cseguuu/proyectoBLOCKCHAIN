@@ -5,9 +5,9 @@ import { mensajeError } from "../lib/errors";
 type Variant = "primary" | "secondary" | "danger";
 
 const VAR: Record<Variant, string> = {
-  primary: "bg-accent text-white hover:brightness-110",
-  secondary: "bg-border text-text hover:brightness-125",
-  danger: "bg-bad text-white hover:brightness-110",
+  primary: "bg-accent text-panel border-accent-deep hover:bg-accent-deep",
+  secondary: "bg-transparent text-text border-line hover:bg-inset",
+  danger: "bg-bad text-panel border-[#6f1f1f] hover:brightness-95",
 };
 
 interface Props {
@@ -53,11 +53,11 @@ export function TxButton({
       onClick={run}
       disabled={busy || disabled}
       aria-busy={busy}
-      className={`rounded-md px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${VAR[variant]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-[3px] border px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${VAR[variant]} ${className}`}
     >
       {busy ? (
         <span className="inline-flex items-center gap-2">
-          <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+          <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
           {pendingLabel}
         </span>
       ) : (
