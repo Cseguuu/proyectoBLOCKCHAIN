@@ -29,3 +29,14 @@ frontend/.netlify
 
 # OS
 .DS_Store
+
+# Claude Code
+.claude/
+
+# Documentos de trabajo internos (no van al repo)
+DECISIONES_TECNICAS.md
+GUION_DEFENSA.md
+INFORME_BASE.md
+Instrucciones.md
+PROGRESO.md
+Rubrica.md
