@@ -56,7 +56,28 @@ forge test -vv
 
 Resultado esperado: **21 tests pasando** (incluye 2 pruebas de fuzzing con 256 corridas cada una).
 
-### Desplegar a Sepolia
+### Desplegar tu propio contrato (y ser admin)
+
+El contrato no recibe parámetros en su constructor: **la cuenta que lo despliega
+queda automáticamente como `admin`** (y como emisor autorizado). Para desplegar el
+tuyo necesitas tres cosas previas:
+
+1. **Un endpoint RPC de Sepolia.** Crea una cuenta gratuita en
+   [Alchemy](https://www.alchemy.com/) o [Infura](https://www.infura.io/) y copia
+   la URL HTTPS de Sepolia. Guárdala en una variable de entorno:
+   ```bash
+   export SEPOLIA_RPC_URL="https://eth-sepolia.g.alchemy.com/v2/TU_API_KEY"
+   ```
+2. **ETH de prueba** en la cuenta que desplegará, desde un faucet de Sepolia
+   (p. ej. [sepoliafaucet.com](https://sepoliafaucet.com/)). Sin saldo, la
+   transacción de despliegue falla por falta de gas.
+3. **Una cuenta importada en el keystore de Foundry** (no se usa la clave privada
+   en texto plano):
+   ```bash
+   cast wallet import MiCuenta --interactive   # pega tu private key una vez
+   ```
+
+Con eso listo, despliega:
 
 ```bash
 forge script script/Deploy.s.sol \
@@ -65,6 +86,10 @@ forge script script/Deploy.s.sol \
   --sender 0xTU_DIRECCION \
   --broadcast
 ```
+
+El comando imprime la dirección del contrato desplegado. Serás el **admin** de ese
+contrato. Para operarlo desde la CLI o el frontend, apunta a esa dirección
+(`.env` de `demo/` o `VITE_CONTRACT_ADDRESS` en `frontend/`).
 
 ### Interactuar (demo CLI) — base del proyecto
 
