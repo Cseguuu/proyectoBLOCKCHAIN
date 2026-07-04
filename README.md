@@ -37,8 +37,8 @@ Solo el hash vive en la blockchain. El documento real se mantiene privado.
 src/RegistroDocumentos.sol      Smart contract principal
 test/RegistroDocumentos.t.sol   Tests con Forge (unitarios + fuzz)
 script/Deploy.s.sol             Script de despliegue a Sepolia
-frontend/                       dApp web (React + Vite + Tailwind + ethers v6) — versión final
-demo/                           CLI en Node.js + ethers.js (herramienta de desarrollo)
+demo/                           CLI en Node.js + ethers.js — base del proyecto
+frontend/                       dApp web (React + Vite + Tailwind + ethers v6) — extra
 ```
 
 ## Uso
@@ -66,21 +66,9 @@ forge script script/Deploy.s.sol \
   --broadcast
 ```
 
-### Interfaz web (versión final)
+### Interactuar (demo CLI) — base del proyecto
 
-dApp con dashboard por rol (Admin / Emisor / Verificador), historial de eventos on-chain y
-conexión por MetaMask. Es la forma recomendada de usar el sistema. Ver [`frontend/README.md`](frontend/README.md).
-
-```bash
-cd frontend
-npm install
-cp .env.example .env   # editar VITE_CONTRACT_ADDRESS con la dirección del contrato
-npm run dev            # http://localhost:5173
-```
-
-### CLI (herramienta de desarrollo)
-
-Alternativa por línea de comandos, útil para tareas administrativas y pruebas rápidas.
+Forma principal de usar el sistema por línea de comandos.
 Ver instrucciones detalladas en [`demo/README.md`](demo/README.md).
 
 ```bash
@@ -91,6 +79,19 @@ cp .env.example .env   # editar con tus valores
 node demo.js info
 node demo.js registrar documento-ejemplo.txt 0xTitular Titulo
 node demo.js consultar documento-ejemplo.txt
+```
+
+### Interfaz web (frontend) — extra
+
+Además de la CLI, se desarrolló una dApp web con dashboard por rol
+(Admin / Emisor / Verificador), historial de eventos on-chain y conexión por
+MetaMask. Ver [`frontend/README.md`](frontend/README.md).
+
+```bash
+cd frontend
+npm install
+cp .env.example .env   # editar VITE_CONTRACT_ADDRESS con la dirección del contrato
+npm run dev            # http://localhost:5173
 ```
 
 ## Decisiones de diseño
