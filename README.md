@@ -37,9 +37,8 @@ Solo el hash vive en la blockchain. El documento real se mantiene privado.
 src/RegistroDocumentos.sol      Smart contract principal
 test/RegistroDocumentos.t.sol   Tests con Forge (unitarios + fuzz)
 script/Deploy.s.sol             Script de despliegue a Sepolia
-demo/                           CLI en Node.js + ethers.js para la demo
-frontend/                       dApp web (React + Vite + Tailwind + ethers v6)
-INFORME_BASE.md                 Base del informe escrito
+frontend/                       dApp web (React + Vite + Tailwind + ethers v6) — versión final
+demo/                           CLI en Node.js + ethers.js (herramienta de desarrollo)
 ```
 
 ## Uso
@@ -55,7 +54,7 @@ forge build
 forge test -vv
 ```
 
-Resultado esperado: **10/10 tests pasando** (incluye 256 corridas de fuzzing).
+Resultado esperado: **21 tests pasando** (incluye 2 pruebas de fuzzing con 256 corridas cada una).
 
 ### Desplegar a Sepolia
 
@@ -67,8 +66,21 @@ forge script script/Deploy.s.sol \
   --broadcast
 ```
 
-### Interactuar (demo CLI)
+### Interfaz web (versión final)
 
+dApp con dashboard por rol (Admin / Emisor / Verificador), historial de eventos on-chain y
+conexión por MetaMask. Es la forma recomendada de usar el sistema. Ver [`frontend/README.md`](frontend/README.md).
+
+```bash
+cd frontend
+npm install
+cp .env.example .env   # editar VITE_CONTRACT_ADDRESS con la dirección del contrato
+npm run dev            # http://localhost:5173
+```
+
+### CLI (herramienta de desarrollo)
+
+Alternativa por línea de comandos, útil para tareas administrativas y pruebas rápidas.
 Ver instrucciones detalladas en [`demo/README.md`](demo/README.md).
 
 ```bash
@@ -81,23 +93,11 @@ node demo.js registrar documento-ejemplo.txt 0xTitular Titulo
 node demo.js consultar documento-ejemplo.txt
 ```
 
-### Interfaz web (frontend)
-
-dApp con dashboard por rol (Admin / Emisor / Verificador), historial de eventos on-chain y
-conexión por MetaMask. Ver [`frontend/README.md`](frontend/README.md).
-
-```bash
-cd frontend
-npm install
-cp .env.example .env   # editar VITE_CONTRACT_ADDRESS con la dirección de la v2
-npm run dev            # http://localhost:5173
-```
-
 ## Decisiones de diseño
 
 Las justificaciones técnicas de cada decisión (uso de `bytes32`, flag `existe`,
 custom errors, eventos indexados, separación `verificar`/`consultar`, etc.) están
-documentadas en [`INFORME_BASE.md`](INFORME_BASE.md).
+documentadas en el informe del proyecto.
 
 ## Tecnologías
 
