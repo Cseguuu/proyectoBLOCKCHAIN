@@ -67,29 +67,38 @@ contract RegistroDocumentos {
     error DireccionInvalida();
 
     // ---------- Modifiers ----------
+    // Un modifier es un "guardia" que se ejecuta ANTES del cuerpo de la función.
+    // El `_;` marca dónde continúa la función si la condición pasó.
+
+    // soloAdmin: si quien llama (msg.sender) no es el admin, revierte y cancela la tx.
     modifier soloAdmin() {
         if (msg.sender != admin) revert SoloAdmin();
         _;
     }
 
+    // soloEmisor: solo deja pasar a wallets marcadas como autorizadas en el mapping.
     modifier soloEmisor() {
         if (!emisoresAutorizados[msg.sender]) revert NoAutorizado();
         _;
     }
 
+    // El constructor corre UNA sola vez, al desplegar el contrato.
     constructor() {
-        admin = msg.sender;
-        emisoresAutorizados[msg.sender] = true; // el admin parte como emisor
+        admin = msg.sender;                       // quien despliega queda como admin
+        emisoresAutorizados[msg.sender] = true;   // y además parte como emisor
         emit EmisorAutorizado(msg.sender, msg.sender);
     }
 
     // ---------- Gestión de roles ----------
+
+    // Solo el admin puede dar permiso de emisor a una wallet.
     function autorizarEmisor(address emisor) external soloAdmin {
-        if (emisor == address(0)) revert DireccionInvalida();
-        emisoresAutorizados[emisor] = true;
-        emit EmisorAutorizado(emisor, msg.sender);
+        if (emisor == address(0)) revert DireccionInvalida();  // no autorizar la dirección cero
+        emisoresAutorizados[emisor] = true;                    // marca la wallet como emisora
+        emit EmisorAutorizado(emisor, msg.sender);             // deja traza de quién autorizó
     }
 
+    // Quita el permiso de emisor (la wallet ya no podrá registrar).
     function revocarEmisor(address emisor) external soloAdmin {
         emisoresAutorizados[emisor] = false;
         emit EmisorRevocado(emisor, msg.sender);
@@ -98,10 +107,10 @@ contract RegistroDocumentos {
     /// @notice Transfiere el rol de admin a otra dirección.
     /// @dev El nuevo admin queda también como emisor autorizado.
     function transferirAdmin(address nuevoAdmin) external soloAdmin {
-        if (nuevoAdmin == address(0)) revert DireccionInvalida();
-        address anterior = admin;
-        admin = nuevoAdmin;
-        emisoresAutorizados[nuevoAdmin] = true;
+        if (nuevoAdmin == address(0)) revert DireccionInvalida(); // evita perder el control a la dirección cero
+        address anterior = admin;                                 // guardamos el admin actual para el evento
+        admin = nuevoAdmin;                                       // el nuevo toma el control
+        emisoresAutorizados[nuevoAdmin] = true;                   // y queda también como emisor
         emit AdminTransferido(anterior, nuevoAdmin);
         emit EmisorAutorizado(nuevoAdmin, anterior);
     }
@@ -114,20 +123,22 @@ contract RegistroDocumentos {
     /// @param tipo categoría del documento.
     function registrar(bytes32 hashDoc, address titular, TipoDocumento tipo)
         external
-        soloEmisor
+        soloEmisor                                    // guardia: solo emisores autorizados entran
     {
-        if (hashDoc == bytes32(0)) revert HashInvalido();
-        if (documentos[hashDoc].existe) revert DocumentoYaExiste();
+        if (hashDoc == bytes32(0)) revert HashInvalido();        // un hash vacío no es válido
+        if (documentos[hashDoc].existe) revert DocumentoYaExiste(); // no se sobrescribe: inmutabilidad
 
+        // Guarda los metadatos del documento asociados a su huella (hash).
         documentos[hashDoc] = Documento({
-            emisor: msg.sender,
-            titular: titular,
-            timestamp: uint64(block.timestamp),
-            tipo: tipo,
-            existe: true,
-            revocado: false
+            emisor: msg.sender,                       // quién lo registró
+            titular: titular,                         // a quién pertenece
+            timestamp: uint64(block.timestamp),       // cuándo (hora del bloque)
+            tipo: tipo,                               // categoría (alumno regular, título, etc.)
+            existe: true,                             // flag para distinguir un slot vacío
+            revocado: false                           // nace vigente
         });
 
+        // Evento indexado: alimenta el historial on-chain del frontend.
         emit DocumentoRegistrado(hashDoc, msg.sender, titular, tipo, uint64(block.timestamp));
     }
 
@@ -135,12 +146,13 @@ contract RegistroDocumentos {
     /// @dev Solo el emisor original del documento o el admin pueden revocarlo.
     ///      El registro histórico se conserva; el documento deja de ser válido.
     function revocarDocumento(bytes32 hashDoc) external {
-        Documento storage doc = documentos[hashDoc];
-        if (!doc.existe) revert DocumentoNoExiste();
-        if (doc.revocado) revert DocumentoYaRevocado();
+        Documento storage doc = documentos[hashDoc];                 // referencia directa al storage para modificarlo
+        if (!doc.existe) revert DocumentoNoExiste();                 // no se puede revocar algo que no existe
+        if (doc.revocado) revert DocumentoYaRevocado();             // ni revocar dos veces
+        // Control de acceso: solo el emisor que lo creó, o el admin.
         if (msg.sender != doc.emisor && msg.sender != admin) revert NoAutorizado();
 
-        doc.revocado = true;
+        doc.revocado = true;        // se invalida, pero el registro histórico se conserva
         emit DocumentoRevocado(hashDoc, msg.sender);
     }
 
@@ -152,17 +164,20 @@ contract RegistroDocumentos {
         external
         returns (bool valido, Documento memory doc)
     {
-        doc = documentos[hashDoc];
-        valido = doc.existe && !doc.revocado;
+        doc = documentos[hashDoc];                 // lee los metadatos asociados al hash
+        valido = doc.existe && !doc.revocado;      // válido = existe Y no está revocado
+        // Emite un evento → deja constancia on-chain de quién verificó y cuándo (auditoría).
+        // Por esto NO es `view` y consume gas (~29k), a diferencia de `consultar`.
         emit DocumentoVerificado(hashDoc, msg.sender, valido);
     }
 
     /// @notice Versión `view` para consultar sin emitir evento ni gastar gas en una tx.
     function consultar(bytes32 hashDoc)
         external
-        view
+        view                                       // `view` = solo lectura: no cambia estado
         returns (bool valido, Documento memory doc)
     {
+        // Misma lógica que verificar pero sin evento: gratis y usable sin wallet.
         doc = documentos[hashDoc];
         valido = doc.existe && !doc.revocado;
     }

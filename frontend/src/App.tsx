@@ -4,7 +4,6 @@ import { WalletBar } from "./components/WalletBar";
 import { NetworkGuard } from "./components/NetworkGuard";
 import { EventTable } from "./components/EventTable";
 import { Icon, type IconName } from "./components/Icon";
-import { Seal } from "./components/Seal";
 import { VerifierView } from "./views/VerifierView";
 import { IssuerView } from "./views/IssuerView";
 import { AdminView } from "./views/AdminView";
@@ -40,7 +39,6 @@ export function App() {
             {/* Banda superior granate */}
             <div className="h-1.5 bg-accent" />
             <div className="flex items-start gap-5 p-6">
-              <Seal size={92} className="hidden shrink-0 sm:block" />
               <div className="min-w-0 flex-1">
                 <p className="label-officio mb-1">Registro Académico · Universidad Adolfo Ibáñez</p>
                 <h1 className="font-display text-3xl font-semibold leading-tight tracking-tight sm:text-[2.1rem]">
@@ -180,7 +178,7 @@ export function App() {
         </main>
 
         <footer className="mt-10 border-t border-border pt-5 text-center font-mono text-xs text-muted">
-          Proyecto final TICS0870 · Grupo 8 "Los Callampines" · Solidity + Foundry + React + ethers v6
+          Proyecto final TICS0870 · Grupo 8 · Solidity + Foundry + React + ethers v6
         </footer>
       </div>
     </div>

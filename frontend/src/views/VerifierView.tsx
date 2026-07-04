@@ -119,8 +119,7 @@ export function VerifierView() {
             </div>
 
             <p className="mb-3 text-xs text-muted">
-              Úsalo solo si necesitas dejar evidencia permanente de que revisaste este documento
-              (por ejemplo, para un proceso legal o de auditoría).
+              Úsalo solo si necesitas dejar evidencia permanente de que revisaste este documento.
             </p>
 
             {address ? (

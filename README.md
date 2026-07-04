@@ -10,7 +10,7 @@ del archivo; el documento real nunca sale del control de su dueño.
 ## Contrato desplegado
 
 - **Red:** Ethereum Sepolia (testnet)
-- **Dirección:** [`0x237b7111Be8436Ba3c74826C3C2DA6B3b2309cE1`](https://sepolia.etherscan.io/address/0x237b7111Be8436Ba3c74826C3C2DA6B3b2309cE1)
+- **Dirección:** [`0xbF43Ec80BDC51ADBCF8dd9932eA2E79DD7f27c84`](https://sepolia.etherscan.io/address/0xbF43Ec80BDC51ADBCF8dd9932eA2E79DD7f27c84)
 
 ## ¿Cómo funciona?
 
